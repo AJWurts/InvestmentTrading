@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 from random import randint
+
+
 previous_data = []
 
 ma_10 = []
