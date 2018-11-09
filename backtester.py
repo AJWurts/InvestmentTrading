@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from Algorithms import wurtsAlgorithm, alwaysBuy, randomBuySell, keepAt50k
+from Nicholas_Algorithms import n_algorithm1, n_algorithm2, n_algorithm3
 STARTING_MONEY = 100000 # $100,000
 STOCK = 'SPY'
 
@@ -35,11 +36,14 @@ def main():
     data = pd.read_csv('SPY.csv')
     
 
-    algorithms = [wurtsAlgorithm, alwaysBuy,  keepAt50k]
-    names = ["Wurts", "Always Buy", "Keep At 50k"]
+    # algorithms = [wurtsAlgorithm, alwaysBuy,  keepAt50k]
+    # names = ["Wurts", "Always Buy", "Keep At 50k"]
+    algorithms = [n_algorithm1, n_algorithm2, n_algorithm3]
+    names = ['algo 1', 'algo 2', 'algo 3']
     _, axs = plt.subplots(len(algorithms), 1, sharex=True)
     for i, algo in enumerate(algorithms):
         result, history = backTester(algo, data['Close'].values)
+        print(result, history)
         axs[i].set_title(names[i])
         axs[i].plot([i for i in range(len(history))], history,  color='blue', linewidth=2)
         print("Algo 1 Result: $" + str(result))
