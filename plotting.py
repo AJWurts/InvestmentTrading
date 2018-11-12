@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sampling import cumsum
 
 def f(x):
     if x > 0.5:
@@ -42,24 +43,34 @@ df = pd.read_csv('SPY_withpercent.csv')
 # sell = pd.read_csv('training_data_sell.csv')
 
 
-# Plot outputs
 
-plt.plot(df['index'], df['Close'],  color='black', linewidth=3)
 
-# Ideal Data
-x = [x for x in map(lambda x: x[1], buy_p)]
-y = [df['Close'][arr[1]] for arr in buy_p]
-plt.scatter(x, y, color='green')
+# # Ideal Data
+# x = [x for x in map(lambda x: x[1], buy_p)]
+# y = [df['Close'][arr[1]] for arr in buy_p]
+# plt.scatter(x, y, color='green')
 
-x_sell = [x for x in map(lambda x: x[1], sell_p)]
-y_sell = [df['Close'][arr[1]] for arr in sell_p]
+# x_sell = [x for x in map(lambda x: x[1], sell_p)]
+# y_sell = [df['Close'][arr[1]] for arr in sell_p]
 
-plt.scatter(x_sell, y_sell, color='red')
+points = cumsum(df['Close'], 0.02)
+x = [x for x in points]
+y = [df['Close'][x] for x in points]
+plt.scatter(x, y, color='blue')
+
+
+
+
+# plt.scatter(x_sell, y_sell, color='red')
 
 # # Predicted Data
 # plt.scatter(buy['index'], [df['Close'][index] for index in buy['index']], color='green')
 # plt.scatter(sell['index'], [df['Close'][index] for index in sell['index']], color='red')
 
+
+# Plot outputs
+
+plt.plot(df['index'], df['Close'],  color='black', linewidth=3)
 plt.xticks(())
 plt.yticks(())
 
