@@ -5,14 +5,13 @@ import pandas as pd
 
 # close = csv['Close']
 
-def cumsum(data, p):
+def cumsum(data, p, returnI=False):
     """
     takes in raw pricing and samples based on the price movement.
     p is the percent threshold to activate
     """
     pos = 0
     neg = 0
-    print(data)
     raw = data['Close']
     diff = raw.diff()
     points = []
@@ -21,12 +20,14 @@ def cumsum(data, p):
         pos = max(0, pos + (diff[i] / raw[i]))
         neg = min(0, neg + (diff[i] / raw[i]))
         if pos > p:
-            points.append(data['Date'][i])
+            if returnI: points.append(i)
+            else: points.append(data['Date'][i])
             pos = 0
         elif neg < -p:
-            points.append(data['Date'][i])
+            if returnI: points.append(i)
+            else: points.append(data['Date'][i])
             neg = 0
-
+    if returnI: return points
     return pd.DataFrame(points)
 
 

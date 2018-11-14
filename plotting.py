@@ -38,7 +38,7 @@ pred_and_index = [[pred_X[i], df['index'][i]] for i in range(len(test_X))]
 sell_p = np.array(list(filter(lambda x: x[0] <= 0.5, pred_and_index)))
 buy_p = np.array(list(filter(lambda x: x[0] > 0.5, pred_and_index)))
 
-df = pd.read_csv('SPY_withpercent.csv')
+df = pd.read_csv('SPY.csv')
 # buy = pd.read_csv('training_data_buy.csv')
 # sell = pd.read_csv('training_data_sell.csv')
 
@@ -52,11 +52,13 @@ df = pd.read_csv('SPY_withpercent.csv')
 
 # x_sell = [x for x in map(lambda x: x[1], sell_p)]
 # y_sell = [df['Close'][arr[1]] for arr in sell_p]
+plt.plot([i for i in range(len(df))], df['Close'],  color='black', linewidth=3)
 
-points = cumsum(df['Close'], 0.02)
+
+points = cumsum(df, 0.01, returnI=True)
 x = [x for x in points]
 y = [df['Close'][x] for x in points]
-plt.scatter(x, y, color='blue')
+plt.scatter(x, y, color='red')
 
 
 
@@ -70,7 +72,7 @@ plt.scatter(x, y, color='blue')
 
 # Plot outputs
 
-plt.plot(df['index'], df['Close'],  color='black', linewidth=3)
+
 plt.xticks(())
 plt.yticks(())
 
