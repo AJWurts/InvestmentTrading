@@ -53,7 +53,7 @@ df = pd.read_csv('SPY_withpercent.csv')
 # x_sell = [x for x in map(lambda x: x[1], sell_p)]
 # y_sell = [df['Close'][arr[1]] for arr in sell_p]
 
-points = cumsum(df['Close'], 0.02)
+points = cumsum(df['Close'], 0.05)
 x = [x for x in points]
 y = [df['Close'][x] for x in points]
 plt.scatter(x, y, color='blue')

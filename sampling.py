@@ -12,7 +12,6 @@ def cumsum(data, p):
     """
     pos = 0
     neg = 0
-    print(data)
     raw = data['Close']
     diff = raw.diff()
     points = []
@@ -21,13 +20,13 @@ def cumsum(data, p):
         pos = max(0, pos + (diff[i] / raw[i]))
         neg = min(0, neg + (diff[i] / raw[i]))
         if pos > p:
-            points.append(data['Date'][i])
+            points.append(data.index[i])
             pos = 0
         elif neg < -p:
-            points.append(data['Date'][i])
+            points.append(data.index[i])
             neg = 0
 
-    return pd.DataFrame(points)
+    return pd.DatetimeIndex(points)
 
 
 
@@ -47,33 +46,6 @@ def cumsum(data, p):
 #     return summmation      
 
 
-# Code straight from the book
-def applyTripleBarrierLabeling(close, events, ptSl, molecule):
-    """
-    Labels every point up, down or neutral
-    close: list of close prices
-    events: 
-        [t1: timestamp of vertical barrier ]
-    """
-    events_ = events.loc[molecule]
-    out = events_[['t1']].copy(deep=True)
-    if ptSl[0] > 0:
-        pt = ptSl[0] * events_['trgt']
-    else:
-        pt = pd.Series(index=events.index)
-    
-    if ptSl[1] > 0:
-            sl = ptSl[1] * events_['trgt']
-    else:
-        sl = pd.Series(index=events.index)
-
-    for loc, t1 in events_['t1'].fillna(close.index[-1]).iteritems():
-        df0 = close[loc:t1] # Path Prices
-        df0 = (df0 / close[loc] - 1) * events_.at[loc, 'side'] # path prices
-        out.loc[loc, 's1'] = df0[df0 < sl[loc]].index.min() # Earlist stop loss
-        out.loc[loc, 'pt'] = df0[df0 > pt[loc]].index.min() # Earlist profit taking
-
-    return out
 
 
 
