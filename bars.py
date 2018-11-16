@@ -13,13 +13,13 @@ class Bar:
         self.date = None
         self.volume = 0
 
-    def addTick(self, tick):
+    def addTick(self, date, tick):
         if self.high is None or tick['High'] > self.high:
             self.high = tick['High']
         if self.low is None or tick['Low'] < self.low:
             self.low = tick['Low']
         if self.open is None:
-            self.date = tick['Date']
+            self.date = date
             self.open = tick['Open']
 
         self.volume += tick['Volume']
@@ -43,12 +43,12 @@ class Bar:
 
 def dollarBars(data, threshold):
 
-    data = data.to_dict('records')
+    dict_data = data.to_dict('records')
     bars = []
     total = 0
     temp_bar = Bar()
-    for d in data:
-        temp_bar.addTick(d)
+    for i, d in enumerate(dict_data):
+        temp_bar.addTick(data.index[i], d)
         total += d['Volume'] * d['Close']
         if total > threshold:
             temp_bar.updateLastTick(threshold)
@@ -60,47 +60,50 @@ def dollarBars(data, threshold):
     bars.append([temp_bar.date, temp_bar.close])
 
     df = pd.DataFrame(bars, columns=['Date', "Close"])
-    return df
+    return df.set_index('Date')
 
 
 def tickBars(data, threshold):
+    dict_data = data.to_dict('records')
     bars = []
     total = 0
     temp_bar = Bar()
-    for d in data:
-        temp_bar.addTick(d)
+    for i, d in enumerate(dict_data):
+        temp_bar.addTick(data.index[i], d)
         total += 1
         if total > threshold:
             temp_bar.updateLastTick(threshold)
-            bars.append(temp_bar)
-            temp_bar = Bar()
-            total = 0
-
-    temp_bar.updateLastTick(threshold)
-    bars.append(temp_bar)
-
-    return bars
-
-
-def volumeBars(data, threshold):
-
-    bars = []
-    total = 0
-    temp_bar = Bar()
-    for d in data:
-        temp_bar.addTick(d)
-        total += d['Volume']
-        if total > threshold:
-            temp_bar.updateLastTick(threshold)
-            bars.append(temp_bar)
+            bars.append([temp_bar.date, temp_bar.close])
             temp_bar = Bar()
             total = total - threshold
 
     temp_bar.updateLastTick(threshold)
-    bars.append(temp_bar)
+    bars.append([temp_bar.date, temp_bar.close])
 
-    return bars
+    df = pd.DataFrame(bars, columns=['Date', "Close"])
+    return df.set_index('Date')
 
+
+def volumeBars(data, threshold):
+
+    dict_data = data.to_dict('records')
+    bars = []
+    total = 0
+    temp_bar = Bar()
+    for i, d in enumerate(dict_data):
+        temp_bar.addTick(data.index[i], d)
+        total += d['Volume']
+        if total > threshold:
+            temp_bar.updateLastTick(threshold)
+            bars.append([temp_bar.date, temp_bar.close])
+            temp_bar = Bar()
+            total = total - threshold
+
+    temp_bar.updateLastTick(threshold)
+    bars.append([temp_bar.date, temp_bar.close])
+
+    df = pd.DataFrame(bars, columns=['Date', "Close"])
+    return df.set_index('Date')
 
 def main():
     data = pd.read_csv('SPY.csv', parse_dates=[0])

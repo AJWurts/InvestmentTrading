@@ -54,8 +54,7 @@ df = pd.read_csv('SPY.csv')
 # y_sell = [df['Close'][arr[1]] for arr in sell_p]
 plt.plot([i for i in range(len(df))], df['Close'],  color='black', linewidth=3)
 
-
-points = cumsum(df, 0.01, returnI=True)
+points = cumsum(df['Close'], 0.05)
 x = [x for x in points]
 y = [df['Close'][x] for x in points]
 plt.scatter(x, y, color='red')
