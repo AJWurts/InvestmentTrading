@@ -41,10 +41,27 @@ class Bar:
         return self.__str__()
 
 
-def dollarBars(data, threshold):
+def Heikin_Ashi(bars):
+    result = [bars[0]]
+    for i in range(1, len(bars)):
+        newBar = Bar()
+        cur = bars[i]
+        prev = bars[i-1]
+        newBar.close = (cur.open +  cur.high + cur.low + cur.close) / 4
+        newBar.open = (prev.close + prev.open) / 2
+        newBar.high = max([cur.high, newBar.open, newBar.close])
+        newBar.low = min([cur.low, newBar.open, newBar.close])
+        result.append(newBar)
+    
+    return result
+
+
+
+def dollarBars(data, threshold, returnBars=False):
 
     dict_data = data.to_dict('records')
     bars = []
+    raw_bars = []
     total = 0
     temp_bar = Bar()
     for i, d in enumerate(dict_data):
@@ -53,13 +70,17 @@ def dollarBars(data, threshold):
         if total > threshold:
             temp_bar.updateLastTick(threshold)
             bars.append([temp_bar.date, temp_bar.close])
+            raw_bars.append(temp_bar)
             temp_bar = Bar()
             total = total - threshold
 
     temp_bar.updateLastTick(threshold)
+    raw_bars.append(temp_bar)
     bars.append([temp_bar.date, temp_bar.close])
 
     df = pd.DataFrame(bars, columns=['Date', "Close"])
+    if returnBars:
+        return df.set_index('Date'), raw_bars
     return df.set_index('Date')
 
 
@@ -105,40 +126,37 @@ def volumeBars(data, threshold):
     df = pd.DataFrame(bars, columns=['Date', "Close"])
     return df.set_index('Date')
 
+
+def plotBars(bars, ax, color='g'):
+    index = [i for i in range(len(bars))]
+    _open = [bar.open for bar in bars]
+    _close = [bar.close for bar in bars]
+    _high = [bar.high for bar in bars]
+    _low = [bar.low for bar in bars]
+
+    candlestick_ohlc(ax, zip(index, _open, _high, _low, _close), colorup='g', width=0.6)
+
 def main():
     data = pd.read_csv('SPY.csv', parse_dates=[0])
 
 
-    dbars = dollarBars(data, 2e11)
-    close = dbars.price.copy()
+    dbars, rawBars = dollarBars(data, 2e11, returnBars=True)
 
-    events = cumsum(dbars, 0.01)
-
+    haBars = Heikin_Ashi(rawBars)
 
 
-    print(events)
+    ax1 = plt.subplot(211)
+    plt.title('Heikin_Ashi Transformation')
+    plotBars(haBars, ax1)
+    ax2 = plt.subplot(212)
+    ax2.set_title('Standard Bars')
+    plotBars(rawBars, ax2)
+    plt.show()
 
-#   index = [i for i in range(len(vBars))]
-#   _open = [bar.open for bar in vBars]
-#   _close = [bar.close for bar in vBars]
-#   _high = [bar.high for bar in vBars]
-#   _low = [bar.low for bar in vBars]
-
-#   _, ax = plt.subplots()
-
-#   candlestick_ohlc(ax, zip(index, _open, _high, _low, _close), width=0.6)
-
-#   plt.show()
-
-    # for i, k in enumerate(data_dict.keys()):
-    #   print(data[i]['Close'])
-
-    # # for d in data['Close']:
-    #   print(d)
-
-    # print(dBars)
 
 
 if __name__ is "__main__":
     main()
 
+
+main()

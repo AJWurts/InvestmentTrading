@@ -31,7 +31,7 @@ forest = RandomForestClassifier()
 
 forest.fit(train_X, train_y)
 
-pred_X = forest.predict(test_X)
+pred_X = forest.predict(test_X)a
 
 pred_and_index = [[pred_X[i], df['index'][i]] for i in range(len(test_X))]
 
