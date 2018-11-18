@@ -117,9 +117,9 @@ if __name__ == "__main__":
     close = dbars.Close.copy()
     dailyVol = getDailyVol(close)
 
-    events = cumsum(dbars, 0.02)
+    events = cumsum(dbars, 0.01)
     
-    t1 = addVerticalBarrier(events, data['Close'], numDays=10)
+    t1 = addVerticalBarrier(events, data['Close'], numDays=5)
     trgt = dailyVol
     side_ = pd.Series(1.,index=trgt.index)
 
@@ -128,6 +128,8 @@ if __name__ == "__main__":
     out = applyTripleBarrierLabeling(data['Close'], events, [1,1] )
 
     bins = getBins(out, data['Close'])
+
+    print(bins.bin.value_counts())
     print(bins)
 
 
