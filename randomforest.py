@@ -1,19 +1,44 @@
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
-df = pd.read_csv('full_data.csv')
+df = pd.read_csv('ml_training_data.csv')
+X = []
+for i in range(len(df)):
+  c = df['data'][i]
+  for char in '[]\n\r':
+    c = c.replace(char, '')
+  
+  result = np.array(c.split(' '), dtype=str)
+  result = result[result != '']
+  result = list(map(lambda x: float(x), result))
 
-train_X = df.iloc[:int(len(df)*.8), 1:-2]
-train_y = df.iloc[:int(len(df)*.8), -2]
-
-test_X = df.iloc[int(len(df)*.8)+1:, 1:-2]
-test_y = df.iloc[int(len(df)*.8)+1:, -2]
+  X.append(result[:12])
 
 
-forest = RandomForestClassifier()
+train_X = X[:int(len(X)*.8)]
+train_y = df['bin'][:int(len(df)*.8)]
 
-forest.fit(train_X, train_y)
+test_X = X[int(len(X)*.8)+1:]
+test_y = df['bin'][int(len(df)*.8)+1:]
 
-print(forest.feature_importances_)
+
+forest = RandomForestClassifier(n_estimators=1, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
+
+bc = BaggingClassifier(base_estimator=forest, n_estimators=1000)
+
+bc.fit(train_X, train_y)
+
+correct = 0
+total = 0
+
+
+results = bc.predict(test_X) == test_y
+correct = len(results[results == True]) / len(results)
+print("Test Accuracy", correct)
+
+results = bc.predict(train_X) == train_y
+correct = len(results[results == True]) / len(results)
+print("Train Accuracy: ", correct)

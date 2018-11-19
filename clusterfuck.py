@@ -1,5 +1,5 @@
 from sampling import cumsum
-from bars import dollarBars
+from bars import dollarBars, Heikin_Ashi
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -54,6 +54,13 @@ def addVerticalBarrier(tEvents, close, numDays=1):
     t1=(pd.Series(close.index[t1],index=tEvents[:t1.shape[0]]))
     return t1
 
+
+def addStartTime(bins, close, numDays=1):
+    tMinus1 = close.index.searchsorted(bins.index - pd.Timedelta(days=numDays))
+    tMinus1 = tMinus1[tMinus1 > 0]
+    tMinus1 = pd.Series(close.index[tMinus1], index=bins.index[:t1.shape[0]])
+    return tMinus1
+
 def getBins(events, close):
     '''
     Compute event's outcome (including side information, if provided).
@@ -81,18 +88,44 @@ def getBins(events, close):
         out.loc[out['ret'] <= 0,'bin'] = 0  # meta-labeling
     return out
 
+def createTrainingData(bins, close):
+    print(close)
+    # Bins
+    start = close.index.searchsorted(bins['start'].values)
+    finish = close.index.searchsorted(bins.index)
+
+    # start = close.index[start]
+    # finish = close.index[finish]
+
+    data = []
+
+    for i in range(len(start)):
+        s = start[i]
+        f = finish[i]
+
+        data.append(close.values[s:f+1])
+
+
+    data = pd.Series(data, index=bins.index[:t1.shape[0]])
+
+    bins['data'] = data
+
+    return bins
+
+
+
 if __name__ == "__main__":
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     data = pd.read_csv("SPY.csv", parse_dates=[0], date_parser=dateparse)
     data = data.set_index('Date')
-    print(data)
-    dbars = dollarBars(data, 1e11)
+    dbars, raw_bars = dollarBars(data, 1e11, returnBars=True)  
+    dbars = Heikin_Ashi(raw_bars)
 
     # print(dbars)
     close = dbars.Close.copy()
     dailyVol = getDailyVol(close)
 
-    events = cumsum(dbars, 0.01)
+    events = cumsum(dbars, 0.008)
     
     t1 = addVerticalBarrier(events, data['Close'], numDays=3)
     trgt = dailyVol
@@ -102,35 +135,45 @@ if __name__ == "__main__":
     
     out = applyTripleBarrierLabeling(data['Close'], events, [1,1] )
 
-    out['side'] = side_
+    # out['side'] = side_
     bins = getBins(out, data['Close'])
 
-    print(bins.bin.value_counts())
-    print(bins)
+
+    tMinus1 = addStartTime(bins, data['Close'], numDays=20)
+
+    bins['start'] = tMinus1
+
+    bins = createTrainingData(bins, data['Close'])    
+
+    bins.to_csv('ml_training_data.csv')
+    # print(bins)
+
+    # print(bins.bin.value_counts())
+    # print(bins)
 
 
-    buying = bins[bins.bin == 1.0]
-    selling = bins[bins.bin == -1]
+    # buying = bins[bins.bin == 1.0]
+    # selling = bins[bins.bin == -1]
 
-    ax = plt.gca()
+    # ax = plt.gca()
     
-    buyingX = [i for i in buying.index]
-    buyingY = [data['Close'][x] for x in buying.index]
-    buyingSize = [abs(ret) * 1000 for ret in buying['ret']]
+    # buyingX = [i for i in buying.index]
+    # buyingY = [data['Close'][x] for x in buying.index]
+    # buyingSize = [abs(ret) * 1000 for ret in buying['ret']]
 
 
-    plt.scatter(buyingX, buyingY, color='green', zorder=3, s=buyingSize)
+    # plt.scatter(buyingX, buyingY, color='green', zorder=3, s=buyingSize)
 
-    sellingX = [i for i in selling.index]
-    sellingY = [data['Close'][x] for x in selling.index]
-    sellingSize = [abs(ret) * 1000 for ret in selling['ret']]
+    # sellingX = [i for i in selling.index]
+    # sellingY = [data['Close'][x] for x in selling.index]
+    # sellingSize = [abs(ret) * 1000 for ret in selling['ret']]
 
-    plt.scatter(sellingX, sellingY, color='red', zorder=2, s=sellingSize)
+    # plt.scatter(sellingX, sellingY, color='red', zorder=2, s=sellingSize)
 
 
-    data.plot(y='Close', ax = ax, zorder=1)
+    # data.plot(y='Close', ax = ax, zorder=1)
 
-    plt.show()
+    # plt.show()
 
     
 

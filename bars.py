@@ -43,17 +43,21 @@ class Bar:
 
 def Heikin_Ashi(bars):
     result = [bars[0]]
+    df_result = []
     for i in range(1, len(bars)):
         newBar = Bar()
+        newBar.date = bars[i].date
         cur = bars[i]
-        prev = bars[i-1]
+        prev = result[i-1]
         newBar.close = (cur.open +  cur.high + cur.low + cur.close) / 4
         newBar.open = (prev.close + prev.open) / 2
         newBar.high = max([cur.high, newBar.open, newBar.close])
         newBar.low = min([cur.low, newBar.open, newBar.close])
         result.append(newBar)
+        df_result.append([newBar.date, newBar.close])
     
-    return result
+    df = pd.DataFrame(df_result, columns=['Date', "Close"])
+    return df.set_index('Date')
 
 
 
@@ -157,6 +161,3 @@ def main():
 
 if __name__ is "__main__":
     main()
-
-
-main()
