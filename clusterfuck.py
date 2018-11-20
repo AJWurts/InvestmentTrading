@@ -96,10 +96,10 @@ def getBins(events, close):
     # bins = []
     # for val in events_.values:
     #     if ~val[1].isnan() and
-    print(events_['pt'].notnull())
-    out['bin'][events_.s1.notnull() & ((events_.pt.notnull() & (events_.s1 < events_.pt)) | events_.pt.isnull())] = -1
-    out['bin'][events_.pt.notnull() & ((events_.s1.notnull() & (events_.pt < events_.s1)) | events_.s1.isnull())] = 1
-    out['bin'][events_.pt.isnull() & events_.s1.isnull()] = 0
+    # print(events_['pt'].notnull())
+    # out['bin'][events_.s1.notnull() & ((events_.pt.notnull() & (events_.s1 < events_.pt)) | events_.pt.isnull())] = -1
+    # out['bin'][events_.pt.notnull() & ((events_.s1.notnull() & (events_.pt < events_.s1)) | events_.s1.isnull())] = 1
+    # out['bin'][events_.pt.isnull() & events_.s1.isnull()] = 0
 
     return out
 
@@ -131,9 +131,11 @@ def createTrainingData(bins, close):
 
 if __name__ == "__main__":
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
-    data = pd.read_csv("SPY.csv", parse_dates=[0], date_parser=dateparse)
+    dateparse2 = lambda x: pd.datetime.strptime(x, "%m/%d/%Y")
+    dateparse3 = lambda x: pd.datetime.strptime(x, "%b-%d-%Y")
+    data = pd.read_csv("EURUSD.csv", parse_dates=[0], date_parser=dateparse3)
     data = data.set_index('Date')
-    bars, raw_bars = dollarBars(data, 1e11, returnBars=True)  
+    bars, raw_bars = tickBars(data, 5, returnBars=True)  
     # dollar bars 1e11
     bars = Heikin_Ashi(raw_bars)
 
@@ -153,16 +155,16 @@ if __name__ == "__main__":
 
 
     bins = getBins(out, data['Close'])
-    print(bins)
 
 
-    # tMinus1 = addStartTime(bins, data['Close'], numDays=7)
 
-    # bins['start'] = tMinus1
+    tMinus1 = addStartTime(bins, data['Close'], numDays=7)
 
-    # bins = createTrainingData(bins, data['Close'])    
+    bins['start'] = tMinus1
 
-    # bins.to_csv('ml_training_data.csv')
+    bins = createTrainingData(bins, data['Close'])    
+
+    bins.to_csv('ml_training_data.csv')
     # # print(bins)
 
     # print(bins.bin.value_counts())

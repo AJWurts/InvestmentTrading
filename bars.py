@@ -14,22 +14,23 @@ class Bar:
         self.volume = 0
 
     def addTick(self, date, tick):
-        if self.high is None or tick['High'] > self.high:
-            self.high = tick['High']
-        if self.low is None or tick['Low'] < self.low:
-            self.low = tick['Low']
+        if self.high is None or float(tick['High']) > self.high:
+            self.high = float(tick['High'])
+        if self.low is None or float(tick['Low']) < self.low:
+            self.low = float(tick['Low'])
         if self.open is None:
             self.date = date
-            self.open = tick['Open']
+            self.open = float(tick['Open'])
 
-        self.volume += tick['Volume']
+        if 'Volume' in tick:
+            self.volume += float(tick['Volume'])
 
         self.lastTick = tick
 
     def updateLastTick(self, threshold):
         if self.volume > threshold:
             self.volume = threshold
-        self.close = self.lastTick['Close']
+        self.close = float(self.lastTick['Close'])
 
     def getRow(self):
         return [self.open, self.high, self.low, self.close]
@@ -41,7 +42,7 @@ class Bar:
         return self.__str__()
 
 
-def Heikin_Ashi(bars):
+def Heikin_Ashi(bars, returnBars=False):
     result = [bars[0]]
     df_result = []
     for i in range(1, len(bars)):
@@ -56,6 +57,8 @@ def Heikin_Ashi(bars):
         result.append(newBar)
         df_result.append([newBar.date, newBar.close])
     
+    if returnBars:
+        return result
     df = pd.DataFrame(df_result, columns=['Date', "Close"])
     return df.set_index('Date')
 
@@ -78,9 +81,10 @@ def dollarBars(data, threshold, returnBars=False):
             temp_bar = Bar()
             total = total - threshold
 
-    temp_bar.updateLastTick(threshold)
-    raw_bars.append(temp_bar)
-    bars.append([temp_bar.date, temp_bar.close])
+    if temp_bar.date is not None:
+        temp_bar.updateLastTick(threshold)
+        raw_bars.append(temp_bar)
+        bars.append([temp_bar.date, temp_bar.close])
 
     df = pd.DataFrame(bars, columns=['Date', "Close"])
     if returnBars:
@@ -141,7 +145,7 @@ def volumeBars(data, threshold, returnBars=False):
     return df.set_index('Date')
 
 
-def plotBars(bars, ax, color='g'):
+def plotBars(time, bars, ax, color='g'):
     index = [i for i in range(len(bars))]
     _open = [bar.open for bar in bars]
     _close = [bar.close for bar in bars]
@@ -156,18 +160,14 @@ def main():
 
     dbars, rawBars = dollarBars(data, 2e11, returnBars=True)
 
-    haBars = Heikin_Ashi(rawBars)
+    haBars = Heikin_Ashi(rawBars, returnBars=True)
 
 
     ax1 = plt.subplot(211)
     plt.title('Heikin_Ashi Transformation')
-    plotBars(haBars, ax1)
+    plotBars(dbars, haBars, ax1)
     ax2 = plt.subplot(212)
     ax2.set_title('Standard Bars')
-    plotBars(rawBars, ax2)
+    plotBars(dbars, rawBars, ax2)
     plt.show()
 
-
-
-if __name__ is "__main__":
-    main()

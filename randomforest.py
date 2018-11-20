@@ -20,12 +20,12 @@ for i in range(len(df)):
 min_length = min([len(d) for d in X])
 X = [x[:min_length] for x in X]
 
+split = 0.9
+train_X = X[:int(len(X)*split)]
+train_y = df['bin'][:int(len(df)*split)]
 
-train_X = X[:int(len(X)*.8)]
-train_y = df['bin'][:int(len(df)*.8)]
-
-test_X = X[int(len(X)*.8)+1:]
-test_y = df['bin'][int(len(df)*.8)+1:]
+test_X = X[int(len(X)*split)+1:]
+test_y = df['bin'][int(len(df)*split)+1:]
 
 
 forest = RandomForestClassifier(n_estimators=1, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
@@ -38,6 +38,8 @@ correct = 0
 total = 0
 
 print(bc.score(test_X, test_y))
+
+# print(bc.score(train_X, train_y))
 
 # print(bc.score(train)
 # results = bc.predict(test_X) == test_y
