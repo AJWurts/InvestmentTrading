@@ -49,7 +49,8 @@ def getDailyVol(close,span0=50):
     
 
 def addVerticalBarrier(tEvents, close, numDays=1):
-    t1=close.index.searchsorted(tEvents+pd.Timedelta(days=numDays))
+    offset = tEvents + pd.Timedelta(days=numDays)
+    t1=close.index.searchsorted(tEvents+pd.Timedelta(days=numDays), side='right')
     t1=t1[t1<close.shape[0]]
     t1=(pd.Series(close.index[t1],index=tEvents[:t1.shape[0]]))
     return t1
@@ -145,7 +146,7 @@ if __name__ == "__main__":
 
     events = cumsum(bars, 0.008)
     
-    t1 = addVerticalBarrier(events, data['Close'], numDays=3)
+    t1 = addVerticalBarrier(events, data['Close'], numDays=10)
     trgt = dailyVol
     side_ = pd.Series(1.,index=t1.index)
 
