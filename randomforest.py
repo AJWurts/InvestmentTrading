@@ -15,7 +15,10 @@ for i in range(len(df)):
   result = result[result != '']
   result = list(map(lambda x: float(x), result))
 
-  X.append(result[:12])
+  X.append(result)
+
+min_length = min([len(d) for d in X])
+X = [x[:min_length] for x in X]
 
 
 train_X = X[:int(len(X)*.8)]
@@ -34,11 +37,13 @@ bc.fit(train_X, train_y)
 correct = 0
 total = 0
 
+print(bc.score(test_X, test_y))
 
-results = bc.predict(test_X) == test_y
-correct = len(results[results == True]) / len(results)
-print("Test Accuracy", correct)
+# print(bc.score(train)
+# results = bc.predict(test_X) == test_y
+# correct = len(results[results == True]) / len(results)
+# print("Test Accuracy", correct)
 
-results = bc.predict(train_X) == train_y
-correct = len(results[results == True]) / len(results)
-print("Train Accuracy: ", correct)
+# results = bc.predict(train_X) == train_y
+# correct = len(results[results == True]) / len(results)
+# print("Train Accuracy: ", correct)

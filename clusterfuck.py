@@ -1,5 +1,5 @@
 from sampling import cumsum
-from bars import dollarBars, Heikin_Ashi
+from bars import dollarBars, Heikin_Ashi, tickBars, volumeBars
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -57,8 +57,8 @@ def addVerticalBarrier(tEvents, close, numDays=1):
 
 def addStartTime(bins, close, numDays=1):
     tMinus1 = close.index.searchsorted(bins.index - pd.Timedelta(days=numDays))
-    tMinus1 = tMinus1[tMinus1 > 0]
-    tMinus1 = pd.Series(close.index[tMinus1], index=bins.index[:t1.shape[0]])
+    tMinus1 = tMinus1[tMinus1 >= 0]
+    tMinus1 = pd.Series(close.index[tMinus1], index=bins.index[:tMinus1.shape[0]])
     return tMinus1
 
 def getBins(events, close):
@@ -118,14 +118,15 @@ if __name__ == "__main__":
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     data = pd.read_csv("SPY.csv", parse_dates=[0], date_parser=dateparse)
     data = data.set_index('Date')
-    dbars, raw_bars = dollarBars(data, 1e11, returnBars=True)  
-    dbars = Heikin_Ashi(raw_bars)
+    bars, raw_bars = dollarBars(data, 1e11, returnBars=True)  
+    # dollar bars 1e11
+    bars = Heikin_Ashi(raw_bars)
 
-    # print(dbars)
-    close = dbars.Close.copy()
+    # print(bars)
+    close = bars.Close.copy()
     dailyVol = getDailyVol(close)
 
-    events = cumsum(dbars, 0.008)
+    events = cumsum(bars, 0.008)
     
     t1 = addVerticalBarrier(events, data['Close'], numDays=3)
     trgt = dailyVol
@@ -135,11 +136,11 @@ if __name__ == "__main__":
     
     out = applyTripleBarrierLabeling(data['Close'], events, [1,1] )
 
-    # out['side'] = side_
+
     bins = getBins(out, data['Close'])
 
 
-    tMinus1 = addStartTime(bins, data['Close'], numDays=20)
+    tMinus1 = addStartTime(bins, data['Close'], numDays=7)
 
     bins['start'] = tMinus1
 
