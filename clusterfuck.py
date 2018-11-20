@@ -73,19 +73,34 @@ def getBins(events, close):
     Case 2: ('side' in events): bin in (0,1) <-label by pnl (meta-labeling)
     '''
     #1) prices aligned with events
+    print(events)
     events_ = events.dropna(subset=['t1'])
     px = events_.index.union(events_['t1'].values).drop_duplicates()
-    px =  close.reindex(px,method='bfill')
+    px = close.reindex(px, method='bfill')
     #2) create out object
     out = pd.DataFrame(index=events_.index)
     out['ret'] = px.loc[events_['t1'].values].values / px.loc[events_.index] - 1
 
+    # out['ret'][abs(out.ret) < 0.008] = 0
     if 'side' in events_:
         out['ret'] *= events_['side'] # meta-labeling
-    out['bin'] = np.sign(out['ret'])
+    
 
     if 'side' in events_:
         out.loc[out['ret'] <= 0,'bin'] = 0  # meta-labeling
+
+    # Labels 1, and -1
+    out['bin'] = np.sign(out['ret'])
+
+    # Labels 1, 0 and -1
+    # bins = []
+    # for val in events_.values:
+    #     if ~val[1].isnan() and
+    print(events_['pt'].notnull())
+    out['bin'][events_.s1.notnull() & ((events_.pt.notnull() & (events_.s1 < events_.pt)) | events_.pt.isnull())] = -1
+    out['bin'][events_.pt.notnull() & ((events_.s1.notnull() & (events_.pt < events_.s1)) | events_.s1.isnull())] = 1
+    out['bin'][events_.pt.isnull() & events_.s1.isnull()] = 0
+
     return out
 
 def createTrainingData(bins, close):
@@ -130,7 +145,7 @@ if __name__ == "__main__":
     
     t1 = addVerticalBarrier(events, data['Close'], numDays=3)
     trgt = dailyVol
-    side_ = pd.Series(1.,index=trgt.index)
+    side_ = pd.Series(1.,index=t1.index)
 
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
     
@@ -138,16 +153,17 @@ if __name__ == "__main__":
 
 
     bins = getBins(out, data['Close'])
+    print(bins)
 
 
-    tMinus1 = addStartTime(bins, data['Close'], numDays=7)
+    # tMinus1 = addStartTime(bins, data['Close'], numDays=7)
 
-    bins['start'] = tMinus1
+    # bins['start'] = tMinus1
 
-    bins = createTrainingData(bins, data['Close'])    
+    # bins = createTrainingData(bins, data['Close'])    
 
-    bins.to_csv('ml_training_data.csv')
-    # print(bins)
+    # bins.to_csv('ml_training_data.csv')
+    # # print(bins)
 
     # print(bins.bin.value_counts())
     # print(bins)
