@@ -49,10 +49,14 @@ def getDailyVol(close,span0=50):
     
 
 def addVerticalBarrier(tEvents, close, numDays=1):
-    offset = tEvents + pd.Timedelta(days=numDays)
-    t1=close.index.searchsorted(tEvents+pd.Timedelta(days=numDays), side='right')
-    t1=t1[t1<close.shape[0]]
-    t1=(pd.Series(close.index[t1],index=tEvents[:t1.shape[0]]))
+    print(tEvents)
+    print(close)
+    offset = tEvents #+ pd.Timedelta(days=numDays)
+    print(close.searchsorted(pd.datetime.strptime('2018-11-20', '%Y-%m-%d')))
+    t1 = close.searchsorted(close[:20], side='left')
+    print(t1)
+    t1 = t1[t1 < close.shape[0]]
+    t1 = (pd.Series(close[t1],index=tEvents[:t1.shape[0]]))
     return t1
 
 
@@ -74,7 +78,7 @@ def getBins(events, close):
     Case 2: ('side' in events): bin in (0,1) <-label by pnl (meta-labeling)
     '''
     #1) prices aligned with events
-    print(events)
+    # print(events)
     events_ = events.dropna(subset=['t1'])
     px = events_.index.union(events_['t1'].values).drop_duplicates()
     px = close.reindex(px, method='bfill')
@@ -105,7 +109,7 @@ def getBins(events, close):
     return out
 
 def createTrainingData(bins, close):
-    print(close)
+    # print(close)
     # Bins
     start = close.index.searchsorted(bins['start'].values)
     finish = close.index.searchsorted(bins.index)
@@ -133,20 +137,21 @@ def createTrainingData(bins, close):
 if __name__ == "__main__":
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     dateparse2 = lambda x: pd.datetime.strptime(x, "%m/%d/%Y")
-    dateparse3 = lambda x: pd.datetime.strptime(x, "%b-%d-%Y")
+    dateparse3 = lambda x: pd.datetime.strptime(x, "%m/%d/%Y")
     data = pd.read_csv("EURUSD.csv", parse_dates=[0], date_parser=dateparse3)
-    data = data.set_index('Date')
+    # data = data.set_index('Date')
     bars, raw_bars = tickBars(data, 5, returnBars=True)  
     # dollar bars 1e11
     bars = Heikin_Ashi(raw_bars)
-
-    # print(bars)
+    
     close = bars.Close.copy()
     dailyVol = getDailyVol(close)
 
     events = cumsum(bars, 0.008)
+    print(data.index)
+    print(data.Date.searchsorted(data['Date'][:10], side='right'))
     
-    t1 = addVerticalBarrier(events, data['Close'], numDays=10)
+    t1 = addVerticalBarrier(events, data['Close'], numDays=5)
     trgt = dailyVol
     side_ = pd.Series(1.,index=t1.index)
 

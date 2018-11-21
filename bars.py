@@ -99,7 +99,7 @@ def tickBars(data, threshold, returnBars=False):
     total = 0
     temp_bar = Bar()
     for i, d in enumerate(dict_data):
-        temp_bar.addTick(data.index[i], d)
+        temp_bar.addTick(data.Date[i], d)
         total += 1
         if total > threshold:
             temp_bar.updateLastTick(threshold)
@@ -114,8 +114,8 @@ def tickBars(data, threshold, returnBars=False):
 
     df = pd.DataFrame(bars, columns=['Date', "Close"])
     if returnBars:
-        return df.set_index('Date'), raw_bars
-    return df.set_index('Date')
+        return df, raw_bars
+    return df
 
 
 def volumeBars(data, threshold, returnBars=False):

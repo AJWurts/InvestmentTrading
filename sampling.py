@@ -25,8 +25,8 @@ def cumsum(data, p, returnI=False):
         elif neg < -p:
             points.append(data.index[i])
             neg = 0
-
-    return pd.DatetimeIndex(points)
+    index = pd.DatetimeIndex(points)
+    return index
 
 
 
