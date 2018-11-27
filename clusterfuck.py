@@ -20,14 +20,14 @@ def applyTripleBarrierLabeling(close, events, ptSl):
         pt = pd.Series(index=events.index)
     
     if ptSl[1] > 0:
-            sl = ptSl[1] * events_['trgt']
+            sl = -ptSl[1] * events_['trgt']
     else:
         sl = pd.Series(index=events.index)
 
     for loc, t1 in events_['t1'].fillna(close.index[-1]).iteritems():
         df0 = close[loc:t1] # Path Prices
         df0 = (df0 / close[loc] - 1) * events_.at[loc, 'side'] # path prices
-        out.loc[loc, 's1'] = df0[df0 < sl[loc]].index.min() # Earlist stop loss
+        out.loc[loc, 'sl'] = df0[df0 < sl[loc]].index.min() # Earlist stop loss
         out.loc[loc, 'pt'] = df0[df0 > pt[loc]].index.min() # Earlist profit taking
 
     return out
@@ -51,20 +51,20 @@ def getDailyVol(close,span0=50):
 def addVerticalBarrier(tEvents, close, numDays=1):
     print(tEvents)
     print(close)
-    offset = tEvents #+ pd.Timedelta(days=numDays)
-    print(close.searchsorted(pd.datetime.strptime('2018-11-20', '%Y-%m-%d')))
-    t1 = close.searchsorted(close[:20], side='left')
+    offset = pd.Timedelta(days=numDays)
+    # print(close.searchsorted(pd.datetime.strptime('2018-11-20', '%Y-%m-%d')))
+    t1 = close.index.searchsorted(tEvents + offset)
     print(t1)
     t1 = t1[t1 < close.shape[0]]
-    t1 = (pd.Series(close[t1],index=tEvents[:t1.shape[0]]))
+    t1 = (pd.Series(close.index[t1],index=tEvents[:t1.shape[0]]))
     return t1
 
 
 def addStartTime(bins, close, numDays=1):
-    tMinus1 = close.index.searchsorted(bins.index - pd.Timedelta(days=numDays))
-    tMinus1 = tMinus1[tMinus1 >= 0]
-    tMinus1 = pd.Series(close.index[tMinus1], index=bins.index[:tMinus1.shape[0]])
-    return tMinus1
+    tMinusl = close.index.searchsorted(bins.index - pd.Timedelta(days=numDays))
+    tMinusl = tMinusl[tMinusl >= 0]
+    tMinusl = pd.Series(close.index[tMinusl], index=bins.index[:tMinusl.shape[0]])
+    return tMinusl
 
 def getBins(events, close):
     '''
@@ -102,9 +102,9 @@ def getBins(events, close):
     # for val in events_.values:
     #     if ~val[1].isnan() and
     # print(events_['pt'].notnull())
-    # out['bin'][events_.s1.notnull() & ((events_.pt.notnull() & (events_.s1 < events_.pt)) | events_.pt.isnull())] = -1
-    # out['bin'][events_.pt.notnull() & ((events_.s1.notnull() & (events_.pt < events_.s1)) | events_.s1.isnull())] = 1
-    # out['bin'][events_.pt.isnull() & events_.s1.isnull()] = 0
+    out['bin'][events_.sl.notnull() & ((events_.pt.notnull() & (events_.sl < events_.pt)) | events_.pt.isnull())] = -1
+    out['bin'][events_.pt.notnull() & ((events_.sl.notnull() & (events_.pt < events_.sl)) | events_.sl.isnull())] = 1
+    out['bin'][events_.pt.isnull() & events_.sl.isnull()] = 0
 
     return out
 
@@ -137,22 +137,22 @@ def createTrainingData(bins, close):
 if __name__ == "__main__":
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     dateparse2 = lambda x: pd.datetime.strptime(x, "%m/%d/%Y")
-    dateparse3 = lambda x: pd.datetime.strptime(x, "%m/%d/%Y")
-    data = pd.read_csv("EURUSD.csv", parse_dates=[0], date_parser=dateparse3)
-    # data = data.set_index('Date')
+    data = pd.read_csv("SPY.csv", parse_dates=[0], date_parser=dateparse)
+   
     bars, raw_bars = tickBars(data, 5, returnBars=True)  
+    data = data.set_index('Date')
     # dollar bars 1e11
     bars = Heikin_Ashi(raw_bars)
     
     close = bars.Close.copy()
     dailyVol = getDailyVol(close)
 
-    events = cumsum(bars, 0.008)
+    events = cumsum(bars, 0.0001)
     print(data.index)
-    print(data.Date.searchsorted(data['Date'][:10], side='right'))
+    # print(data.Date.searchsorted(data['Date'][:10], side='right'))
     
     t1 = addVerticalBarrier(events, data['Close'], numDays=5)
-    trgt = dailyVol
+    trgt = pd.Series(0.003, index=t1.index)#dailyVol[t1.index]
     side_ = pd.Series(1.,index=t1.index)
 
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
@@ -164,9 +164,9 @@ if __name__ == "__main__":
 
 
 
-    tMinus1 = addStartTime(bins, data['Close'], numDays=7)
+    tMinusl = addStartTime(bins, data['Close'], numDays=7)
 
-    bins['start'] = tMinus1
+    bins['start'] = tMinusl
 
     bins = createTrainingData(bins, data['Close'])    
 

@@ -22,10 +22,10 @@ X = [x[:min_length] for x in X]
 
 split = 0.9
 train_X = X[:int(len(X)*split)]
-train_y = df['bin'][:int(len(df)*split)]
+train_y = df['bin'][:int(len(df)*split)].values
 
 test_X = X[int(len(X)*split)+1:]
-test_y = df['bin'][int(len(df)*split)+1:]
+test_y = df['bin'][int(len(df)*split)+1:].values
 
 
 forest = RandomForestClassifier(n_estimators=1, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
@@ -40,9 +40,12 @@ total = 0
 print(bc.score(test_X, test_y))
 
 # print(bc.score(train_X, train_y))
+print(bc.predict(train_X))
 
 # print(bc.score(train)
 # results = bc.predict(test_X) == test_y
+print(bc.predict(test_X))
+print(test_y)
 # correct = len(results[results == True]) / len(results)
 # print("Test Accuracy", correct)
 
