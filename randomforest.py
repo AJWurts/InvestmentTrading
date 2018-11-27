@@ -2,7 +2,7 @@ from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-
+from joblib import dump
 
 df = pd.read_csv('ml_training_data.csv')
 X = []

@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 from random import randint
+from joblib import load
 
+mlalgoHasRun = False
+clf = None
 
 previous_data = []
 
@@ -54,3 +57,22 @@ def randomBuySell(p, cash, stockOwned):
         return 'sell', randint(0, 500)
     else:
         return 'do nothing', 0
+
+
+def mlalgo(p, cash, stockOwned):
+    previous_data.append(p)
+    if not mlalgoHasRun:
+        clf = load('randomforest.joblib')
+
+    
+    
+    if len(previous_data) > 5:
+
+    result = clf.predict(previous_data[-5:])
+
+    print(result)
+    if result == 1:
+        return 'buy', 10000
+    else:
+        return 'sell', 100000
+    return result
