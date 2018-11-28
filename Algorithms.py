@@ -10,6 +10,11 @@ previous_data = []
 ma_10 = []
 ma_20 = []
 
+pos = 0
+neg = 0
+
+
+
 def MA(n=10):
     return sum(previous_data[-n:]) / n
 
@@ -60,19 +65,40 @@ def randomBuySell(p, cash, stockOwned):
 
 
 def mlalgo(p, cash, stockOwned):
+    global pos, neg, mlalgoHasRun, clf, previous_data
     previous_data.append(p)
     if not mlalgoHasRun:
+        mlalgoHasRun = True
         clf = load('randomforest.joblib')
 
-    
-    
-    if len(previous_data) > 5:
+    # flag = False
+    # threshold = 0.
+    # if len(previous_data) > 1:
+    #     pos = max(0, pos + ((previous_data[-2] - p) / p))
+    #     neg = min(0, neg + ((previous_data[-2] - p) / p))
 
-    result = clf.predict(previous_data[-5:])
+    #     if pos > threshold:
+    #         flag = True
+    #         pos = 0
+    #     elif neg < -threshold:
+    #         flag = True
+    #         neg = 0
 
-    print(result)
-    if result == 1:
-        return 'buy', 10000
-    else:
-        return 'sell', 100000
-    return result
+    pos += 1
+    if len(previous_data) > 5 and pos >= 10:
+        pos = 0
+        print('predict')
+        result = clf.predict([previous_data[-5:]])[0]
+        if result == 1:
+            return 'buy', 10000
+        else:
+            return 'sell', 100000
+
+    return 'Do Nothing', 10
+
+
+def reset():
+    global previous_data, ma_10, ma_20
+    previous_data = []
+    ma_10 = []
+    ma_20 = []

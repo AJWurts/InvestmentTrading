@@ -34,6 +34,8 @@ bc = BaggingClassifier(base_estimator=forest, n_estimators=1000)
 
 bc.fit(train_X, train_y)
 
+dump(bc, 'randomforest.joblib')
+
 correct = 0
 total = 0
 
