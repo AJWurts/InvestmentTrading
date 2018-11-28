@@ -1,11 +1,14 @@
 import matplotlib.pyplot as plt
 from random import randint
+import numpy as np
 from joblib import load
+from fracdiff import getWeights
 
 mlalgoHasRun = False
 clf = None
-
+w = None
 previous_data = []
+diff_data = []
 
 ma_10 = []
 ma_20 = []
@@ -65,30 +68,38 @@ def randomBuySell(p, cash, stockOwned):
 
 
 def mlalgo(p, cash, stockOwned):
-    global pos, neg, mlalgoHasRun, clf, previous_data
+    global pos, neg, mlalgoHasRun, clf, previous_data, w, diff_data
     previous_data.append(p)
+
     if not mlalgoHasRun:
         mlalgoHasRun = True
+        w = getWeights(0.5)
         clf = load('randomforest.joblib')
 
-    # flag = False
-    # threshold = 0.
-    # if len(previous_data) > 1:
-    #     pos = max(0, pos + ((previous_data[-2] - p) / p))
-    #     neg = min(0, neg + ((previous_data[-2] - p) / p))
+    if len(previous_data) > len(w):
+        val = np.dot(w.T, previous_data[-len(w):])
+        print(val)
+        diff_data.append(val[0])
 
-    #     if pos > threshold:
-    #         flag = True
-    #         pos = 0
-    #     elif neg < -threshold:
-    #         flag = True
-    #         neg = 0
+    flag = False
+    threshold = 0.01
+    if len(previous_data) > 1:
+        pos = max(0, pos + ((previous_data[-2] - p) / p))
+        neg = min(0, neg + ((previous_data[-2] - p) / p))
 
-    pos += 1
-    if len(previous_data) > 5 and pos >= 10:
+        if pos > threshold:
+            flag = True
+            pos = 0
+        elif neg < -threshold:
+            flag = True
+            neg = 0
+
+
+    if len(diff_data) > 13 and flag:
         pos = 0
         print('predict')
-        result = clf.predict([previous_data[-5:]])[0]
+
+        result = clf.predict([diff_data[-13:]])[0]
         if result == 1:
             return 'buy', 10000
         else:

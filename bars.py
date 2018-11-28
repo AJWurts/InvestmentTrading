@@ -65,14 +65,14 @@ def Heikin_Ashi(bars, returnBars=False):
 
 
 def dollarBars(data, threshold, returnBars=False):
-
+# d['Volume'] * d['Close']
     dict_data = data.to_dict('records')
     bars = []
     raw_bars = []
     total = 0
     temp_bar = Bar()
     for i, d in enumerate(dict_data):
-        temp_bar.addTick(data.index[i], d)
+        temp_bar.addTick(data.Date[i], d)
         total += d['Volume'] * d['Close']
         if total > threshold:
             temp_bar.updateLastTick(threshold)
@@ -81,15 +81,14 @@ def dollarBars(data, threshold, returnBars=False):
             temp_bar = Bar()
             total = total - threshold
 
-    if temp_bar.date is not None:
-        temp_bar.updateLastTick(threshold)
-        raw_bars.append(temp_bar)
-        bars.append([temp_bar.date, temp_bar.close])
+    temp_bar.updateLastTick(threshold)
+    raw_bars.append(temp_bar)
+    bars.append([temp_bar.date, temp_bar.close])
 
     df = pd.DataFrame(bars, columns=['Date', "Close"])
     if returnBars:
-        return df.set_index('Date'), raw_bars
-    return df.set_index('Date')
+        return df, raw_bars
+    return df
 
 
 def tickBars(data, threshold, returnBars=False):

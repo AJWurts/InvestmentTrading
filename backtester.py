@@ -34,8 +34,9 @@ def backTester(algorithm, close_prices):
 
 
 def main():
-    data = pd.read_csv('DIA.csv')
+    data = pd.read_csv('./data/SPY.csv')
     
+
 
     algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
     # names = ["Wurts", "Always Buy", "Keep At 50k"]
@@ -48,7 +49,7 @@ def main():
         axs[i].set_title(names[i])
         axs[i].plot([i for i in range(len(history))], history,  color='blue', linewidth=2)
         reset()
-        print("Algo 1 Result: $" + str(result))
+        print(names[i] + " Result: $" + str(result))
         print("ROI: {:.2f}%".format((result - STARTING_MONEY) / STARTING_MONEY * 100))
     plt.show()
 

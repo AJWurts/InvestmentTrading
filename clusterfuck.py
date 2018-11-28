@@ -1,5 +1,6 @@
 from sampling import cumsum
 from bars import dollarBars, Heikin_Ashi, tickBars, volumeBars
+from fracdiff import fracDiff
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -33,7 +34,6 @@ def applyTripleBarrierLabeling(close, events, ptSl):
     return out
 
 
-
 def getDailyVol(close,span0=50):
     # daily vol reindexed to close
     df0 = close.index.searchsorted(close.index-pd.Timedelta(days=1))
@@ -61,6 +61,7 @@ def addStartTime(bins, close, numDays=1):
     tMinusl = tMinusl[tMinusl >= 0]
     tMinusl = pd.Series(close.index[tMinusl], index=bins.index[:tMinusl.shape[0]])
     return tMinusl
+
 
 def getBins(events, close):
     '''
@@ -93,20 +94,18 @@ def getBins(events, close):
     # Labels 1, and -1
     out['bin'] = np.sign(out['ret'])
 
-    # Labels 1, 0 and -1
-    # bins = []
-    # for val in events_.values:
-    #     if ~val[1].isnan() and
-    # print(events_['pt'].notnull())
     out['bin'][events_.sl.notnull() & ((events_.pt.notnull() & (events_.sl < events_.pt)) | events_.pt.isnull())] = -1
     out['bin'][events_.pt.notnull() & ((events_.sl.notnull() & (events_.pt < events_.sl)) | events_.sl.isnull())] = 1
     out['bin'][events_.pt.isnull() & events_.sl.isnull()] = 0
 
     return out
 
-def createTrainingData(bins, close):
+
+def createTrainingData(bins, data):
     # print(close)
     # Bins
+    diff = fracDiff(data)
+    close = diff['Close']
     start = close.index.searchsorted(bins['start'].values)
     finish = close.index.searchsorted(bins.index)
 
@@ -130,20 +129,20 @@ def createTrainingData(bins, close):
 
 
 
+
 if __name__ == "__main__":
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     dateparse2 = lambda x: pd.datetime.strptime(x, "%m/%d/%Y")
-    data = pd.read_csv("SPY.csv", parse_dates=[0], date_parser=dateparse)
+    data = pd.read_csv("./data/SPY.csv", parse_dates=[0], date_parser=dateparse)
    
-    bars, raw_bars = tickBars(data, 5, returnBars=True)  
+    bars, raw_bars = dollarBars(data, 1e11, returnBars=True)  
     data = data.set_index('Date')
     # dollar bars 1e11
     bars = Heikin_Ashi(raw_bars)
     
-    close = bars.Close.copy()
-    dailyVol = getDailyVol(close)
 
-    events = cumsum(bars, 0.0001)
+
+    events = cumsum(bars, 0.008)
     print(data.index)
     # print(data.Date.searchsorted(data['Date'][:10], side='right'))
     
@@ -153,7 +152,7 @@ if __name__ == "__main__":
 
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
     
-    out = applyTripleBarrierLabeling(data['Close'], events, [1,1] )
+    out = applyTripleBarrierLabeling(data['Close'], events, [1,1])
 
 
     bins = getBins(out, data['Close'])
@@ -161,11 +160,11 @@ if __name__ == "__main__":
     bins = bins[bins.bin != 0]
 
 
-    tMinusl = addStartTime(bins, data['Close'], numDays=7)
+    tMinusl = addStartTime(bins, data['Close'], numDays=20)
 
     bins['start'] = tMinusl
 
-    bins = createTrainingData(bins, data['Close'])    
+    bins = createTrainingData(bins, data)    
 
     bins.to_csv('ml_training_data.csv')
     # # print(bins)

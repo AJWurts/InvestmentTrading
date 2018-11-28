@@ -18,6 +18,7 @@ for i in range(len(df)):
   X.append(result)
 
 min_length = min([len(d) for d in X])
+print(min_length)
 X = [x[:min_length] for x in X]
 
 split = 0.9
