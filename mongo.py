@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
 
 client = MongoClient('mongodb://localhost:27017')
 db = client.local
@@ -51,9 +52,12 @@ def saveColumnsToCSV(stocks):
         mask = (OHLC.Volume >= 100) & (OHLC.Close > 0)
         print(mask.values)
         OHLC = OHLC[mask.values]
-        OHLC.to_csv(ticker + "_mongo.csv")
+        OHLC.to_csv('./data/' + ticker + "_mongo.csv")
 
 
-saveColumnsToCSV(['AAPL', 'AMD', "NVDA", "SPY", "AMZN"])
+if len(sys.argv) > 1:
+    saveColumnsToCSV(sys.argv[1:])
+else:
+    saveColumnsToCSV(['AAPL', 'AMD', "NVDA", "SPY", "AMZN"])
 
 # plotStocks(['AAPL', 'AMD'])

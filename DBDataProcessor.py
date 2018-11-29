@@ -1,5 +1,5 @@
 from sampling import cumsum
-from bars import dollarBars, Heikin_Ashi, tickBars, volumeBars
+from bars import dollarBars, Heikin_Ashi, tickBars, volumeBars, customBars
 from fracdiff import fracDiff
 import numpy as np
 import pandas as pd
@@ -111,8 +111,9 @@ def getBins(events, close):
 def createTrainingData(bins, data, length=50):
     # print(close)
     # Bins
-    diff = fracDiff(data)
-    close = diff['Close']
+    # diff = fracDiff(data)
+    # close = diff['Close']
+    close = data['Close']
     start = close.index.searchsorted(bins['start'].values)
     finish = close.index.searchsorted(bins.index)
 
@@ -126,7 +127,7 @@ def createTrainingData(bins, data, length=50):
         f = finish[i]
         arrays.append(close.values[s:f+1])
 
-    training_arrays = pd.Series(arrays, index=bins.index[:t1.shape[0]])
+    training_arrays = pd.Series(arrays, index=bins.index)
     mask = training_arrays.apply(lambda x: len(x) >= length).values
     
     bins['data'] = training_arrays
@@ -135,11 +136,11 @@ def createTrainingData(bins, data, length=50):
 
 
     
-def processor():
+def processor(filename):
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
-    data = pd.read_csv("./data/AAPL_mongo.csv", parse_dates=[0], date_parser=dateparse)
+    data = pd.read_csv(filename, parse_dates=[0], date_parser=dateparse)
    
-    bars, raw_bars = dollarBars(data, 1e7, returnBars=True)  
+    bars, raw_bars = customBars(data, 1e7, lambda x: x['Volume'] * x['Close'], returnBars=True)  
     data = data.set_index('Date')
     # dollar bars 1e11 for days
     # dollar bar for minutes = 3.6e7
