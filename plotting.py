@@ -38,7 +38,19 @@ def f(x):
 # sell_p = np.array(list(filter(lambda x: x[0] <= 0.5, pred_and_index)))
 # buy_p = np.array(list(filter(lambda x: x[0] > 0.5, pred_and_index)))
 
-df = pd.read_csv('fracdiff.csv')
+
+from fracdiff import fracDiff
+df = pd.read_csv('./data/SPY.csv')
+df = df.set_index('Date')
+df = df.drop(['Volume', 'Adj Close', 'High', 'Open', 'Low'], axis=1)
+ds = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1]
+_, axs = plt.subplots(len(ds), 1, sharex=True)
+for i, algo in enumerate(ds):
+    df_ = fracDiff(df, d=algo)
+    # print(result, history)
+    axs[i].set_title("d: " + str(algo))
+    df_.plot(ax=axs[i])
+plt.show()
 # buy = pd.read_csv('training_data_buy.csv')
 # sell = pd.read_csv('training_data_sell.csv')
 
@@ -52,28 +64,34 @@ df = pd.read_csv('fracdiff.csv')
 
 # x_sell = [x for x in map(lambda x: x[1], sell_p)]
 # y_sell = [df['Close'][arr[1]] for arr in sell_p]
-plt.plot([i for i in range(len(df))], df['Close'],  color='black', linewidth=3)
+# df.reset_index().plot(x='index', y='Close', ax=plt.subplot(111))
 
-# points = cumsum(df['Close'], 0.05)
-# x = [x for x in points]
-# y = [df['Close'][x] for x in points]
-# plt.scatter(x, y, color='red')
+# df.plot()
+# # df.plot(x='index', y='Close')
+# # plt.plot([i for i in range(len(df))], df['Close'],  color='black', linewidth=3)
 
-
-
-
-# plt.scatter(x_sell, y_sell, color='red')
-
-# # Predicted Data
-# plt.scatter(buy['index'], [df['Close'][index] for index in buy['index']], color='green')
-# plt.scatter(sell['index'], [df['Close'][index] for index in sell['index']], color='red')
+# plt.xlabel("5 Year Spy Data")
+# plt.ylabel("Price Movement")
+# # points = cumsum(df['Close'], 0.05)
+# # x = [x for x in points]
+# # y = [df['Close'][x] for x in points]
+# # plt.scatter(x, y, color='red')
 
 
-# Plot outputs
 
 
-plt.xticks(())
-plt.yticks(())
+# # plt.scatter(x_sell, y_sell, color='red')
+
+# # # Predicted Data
+# # plt.scatter(buy['index'], [df['Close'][index] for index in buy['index']], color='green')
+# # plt.scatter(sell['index'], [df['Close'][index] for index in sell['index']], color='red')
 
 
-plt.show()
+# # Plot outputs
+
+
+# # plt.xticks(())
+# # plt.yticks(())
+
+
+# plt.show()

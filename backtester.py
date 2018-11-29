@@ -33,15 +33,16 @@ def backTester(algorithm, close_prices):
 
 
 
-def main():
-    data = pd.read_csv('./data/SPY.csv')
+def start_backtest():
+    data = pd.read_csv('./data/AAPL_mongo.csv')
     
+    print(min(data['Close']))
 
-
+    
     algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
-    # names = ["Wurts", "Always Buy", "Keep At 50k"]
+    names = ["Wurts", "Always Buy", "Keep At 50k"]
     # algorithms = [n_algorithm1, n_algorithm2, n_algorithm3]
-    names = ['algo 1', 'algo 2', 'algo 3']
+    # names = ['algo 1', 'algo 2', 'algo 3']
     _, axs = plt.subplots(len(algorithms), 1, sharex=True)
     for i, algo in enumerate(algorithms):
         result, history = backTester(algo, data['Close'].values)
@@ -61,5 +62,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    start_backtest()
 

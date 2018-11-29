@@ -49,11 +49,17 @@ def getFracDiffCSV(filename, d=0.5, thres=0.01):
 
 	return df
 
-# df = pd.read_csv('./data/SPY.csv')
-# df = df.set_index('Date')
-
-# # close = df
-
-# df = fracDiff(df, 0.5, 0.01)
-
-# df.to_csv("fracdiff.csv")
+def plotExample():
+	import matplotlib.pyplot as plt
+	from fracdiff import fracDiff
+	df = pd.read_csv('./data/SPY.csv')
+	df = df.set_index('Date')
+	df = df.drop(['Volume', 'Adj Close', 'High', 'Open', 'Low'], axis=1)
+	ds = [0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1]
+	_, axs = plt.subplots(len(ds), 1, sharex=True)
+	for i, algo in enumerate(ds):
+			df_ = fracDiff(df, d=algo)
+			# print(result, history)
+			axs[i].set_title("d: " + str(algo))
+			df_.plot(ax=axs[i])
+	plt.show()

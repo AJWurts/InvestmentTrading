@@ -78,8 +78,9 @@ def mlalgo(p, cash, stockOwned):
 
     if len(previous_data) > len(w):
         val = np.dot(w.T, previous_data[-len(w):])
-        print(val)
-        diff_data.append(val[0])
+        # print(val)
+        if not np.isnan(val[0]):
+            diff_data.append(val[0])
 
     flag = False
     threshold = 0.01
@@ -95,11 +96,11 @@ def mlalgo(p, cash, stockOwned):
             neg = 0
 
 
-    if len(diff_data) > 13 and flag:
+    if len(diff_data) > 50 and flag:
         pos = 0
-        print('predict')
+        # print('predict')
 
-        result = clf.predict([diff_data[-13:]])[0]
+        result = clf.predict([diff_data[-50:]])[0]
         if result == 1:
             return 'buy', 10000
         else:
