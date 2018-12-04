@@ -63,9 +63,35 @@ def Heikin_Ashi(bars, returnBars=False):
     return df.set_index('Date')
 
 
+def customBars(data, threshold, func, returnBars=False):
+    dict_data = data.to_dict('records')
+    bars = []
+    raw_bars = []
+    total = 0
+    temp_bar = Bar()
+    for i, d in enumerate(dict_data):
+        temp_bar.addTick(data.Date[i], d)
+        total += func(d)
+        if total > threshold:
+            temp_bar.updateLastTick(threshold)
+            bars.append([temp_bar.date, temp_bar.close])
+            raw_bars.append(temp_bar)
+            temp_bar = Bar()
+            total = total - threshold
+
+    if temp_bar.high is not None: # High chosen arbitrarily 
+        temp_bar.updateLastTick(threshold)
+        raw_bars.append(temp_bar)
+        bars.append([temp_bar.date, temp_bar.close])
+
+    df = pd.DataFrame(bars, columns=['Date', "Close"])
+    if returnBars:
+        return df, raw_bars
+    return df
+
 
 def dollarBars(data, threshold, returnBars=False):
-# d['Volume'] * d['Close']
+
     dict_data = data.to_dict('records')
     bars = []
     raw_bars = []
@@ -81,9 +107,10 @@ def dollarBars(data, threshold, returnBars=False):
             temp_bar = Bar()
             total = total - threshold
 
-    temp_bar.updateLastTick(threshold)
-    raw_bars.append(temp_bar)
-    bars.append([temp_bar.date, temp_bar.close])
+    if temp_bar.high is not None: # High chosen arbitrarily 
+        temp_bar.updateLastTick(threshold)
+        raw_bars.append(temp_bar)
+        bars.append([temp_bar.date, temp_bar.close])
 
     df = pd.DataFrame(bars, columns=['Date', "Close"])
     if returnBars:
@@ -107,9 +134,10 @@ def tickBars(data, threshold, returnBars=False):
             temp_bar = Bar()
             total = total - threshold
 
-    temp_bar.updateLastTick(threshold)
-    raw_bars.append(temp_bar)
-    bars.append([temp_bar.date, temp_bar.close])
+    if temp_bar.high is not None: # High chosen arbitrarily 
+        temp_bar.updateLastTick(threshold)
+        raw_bars.append(temp_bar)
+        bars.append([temp_bar.date, temp_bar.close])
 
     df = pd.DataFrame(bars, columns=['Date', "Close"])
     if returnBars:
