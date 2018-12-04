@@ -1,2 +1,3 @@
 Random Forest with Bagging Classifier. Dollar Bars with Heikins smoothing accuracy = 0.62703
 Random Random Forest with Bagging Classifier. Tick bars with hekins smoothing accuracy = 0.5384615384615384
+Backtested with VOO: 49.18% return over 48.54% without ML
