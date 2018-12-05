@@ -3,3 +3,4 @@ forex_data/*
 forex_data.zip
 .vscode*
 __pycache__/*
+data/forex_data.csv
