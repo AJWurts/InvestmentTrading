@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from Algorithms import wurtsAlgorithm, alwaysBuy, randomBuySell, keepAt50k, mlalgo, reset
-from Nicholas_Algorithms import n_algorithm1, n_algorithm2, n_algorithm3
+from algorithms.Algorithms import wurtsAlgorithm, alwaysBuy, randomBuySell, keepAt50k, mlalgo, reset
+from algorithms.Nicholas_Algorithms import n_algorithm1, n_algorithm2, n_algorithm3
 STARTING_MONEY = 100000 # $100,000
 STOCK = 'SPY'
 

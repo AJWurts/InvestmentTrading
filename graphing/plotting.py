@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from sampling import cumsum
+from machinelearning.sampling import cumsum
 
 def f(x):
     if x > 0.5:
@@ -39,7 +39,7 @@ def f(x):
 # buy_p = np.array(list(filter(lambda x: x[0] > 0.5, pred_and_index)))
 
 
-from fracdiff import fracDiff
+from machinelearning.fracdiff import fracDiff
 df = pd.read_csv('./data/SPY.csv')
 df = df.set_index('Date')
 df = df.drop(['Volume', 'Adj Close', 'High', 'Open', 'Low'], axis=1)

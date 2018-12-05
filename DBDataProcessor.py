@@ -1,6 +1,6 @@
-from sampling import cumsum
-from bars import dollarBars, Heikin_Ashi, tickBars, volumeBars, customBars
-from fracdiff import fracDiff
+from machinelearning.sampling import cumsum
+from machinelearning.bars import dollarBars, Heikin_Ashi, tickBars, volumeBars, customBars
+from machinelearning.fracdiff import fracDiff
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
