@@ -176,7 +176,7 @@ def processor(filename):
     return bins
 
 if __name__ == "__main__":
-    main()
+    processor("./data/SPY.csv")
 
 
 
