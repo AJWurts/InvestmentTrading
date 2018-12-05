@@ -1,2 +1,5 @@
 .vscode/settings.json
 forex_data/*
+forex_data.zip
+.vscode*
+__pycache__/*

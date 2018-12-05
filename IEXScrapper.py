@@ -7,8 +7,6 @@ from pprint import pprint
 client = MongoClient('mongodb://localhost:27017')
 db = client.local
 
-# stock = sys.argv[1]
-
 for stock in sys.argv[1:]:
   col = db[stock]
 

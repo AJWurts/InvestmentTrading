@@ -17,6 +17,6 @@ for (var i = 0; i < databases.length; i++) {
        }
        ]);
        
-    print(result);
+    print(result.hasNext());
 
 }
