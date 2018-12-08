@@ -108,17 +108,16 @@ def getBins(events, close):
     return out
 
 
-def createTrainingData(bins, data, length=50):
+def createTrainingData(bins, data, length=120, fracDiff=False):
     # print(close)
     # Bins
-    # diff = fracDiff(data)
-    # close = diff['Close']
-    close = data['Close']
+    if fracDiff:
+        diff = fracDiff(data)
+        close = diff['Close']
+    else:
+        close = data['Close']
     start = close.index.searchsorted(bins['start'].values)
     finish = close.index.searchsorted(bins.index)
-
-    # start = close.index[start]
-    # finish = close.index[finish]
 
     arrays = []
 
@@ -128,7 +127,7 @@ def createTrainingData(bins, data, length=50):
         arrays.append(close.values[s:f+1])
 
     training_arrays = pd.Series(arrays, index=bins.index)
-    mask = training_arrays.apply(lambda x: len(x) >= length).values
+    mask = training_arrays.apply(lambda x: len(x) == length).values
     
     bins['data'] = training_arrays
     bins = bins[mask]
@@ -138,45 +137,54 @@ def createTrainingData(bins, data, length=50):
     
 def processor(filename):
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+    print("Loading CSV")
     data = pd.read_csv(filename, parse_dates=[0], date_parser=dateparse)
+    
    
-    bars, raw_bars = customBars(data, 1e7, lambda x: x['Volume'] * x['Close'], returnBars=True)  
+    print("Creating Bars")
+    bars, raw_bars = customBars(data, 10, lambda x: 1, returnBars=True)  
     data = data.set_index('Date')
     # dollar bars 1e11 for days
     # dollar bar for minutes = 3.6e7
+
+    print("Heikin Ashi Bars")
     bars = Heikin_Ashi(raw_bars)
     
 
 
+    print("Cumulative Summation Event Selector")
     events = cumsum(bars, 0.0001)
-    print(data.index)
-    
+
+    print("Vertical Bars")
     t1 = addVerticalBarrier(events, data['Close'], numMinutes=120)
-    trgt = pd.Series(0.003, index=t1.index)#dailyVol[t1.index]
+    trgt = pd.Series(0.0008, index=t1.index)
     side_ = pd.Series(1.,index=t1.index)
 
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
     
+    print("Triple Bars")
     out = applyTripleBarrierLabeling(data['Close'], events, [1,1])
 
-
+    print("Bins")
     bins = getBins(out, data['Close'])
 
     bins = bins[bins.bin != 0]
 
-
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=50)
+    print("Add Start Time")
+    tMinusl = addStartTime(bins, data['Close'], numMinutes=120)
 
     bins['start'] = tMinusl
 
-    bins = createTrainingData(bins, data)    
+    print("Creating Training Data")
+    bins = createTrainingData(bins, data, length=120)    
     
-    bins.to_csv('ml_training_data.csv')
+    print("Saving")
+    bins.to_csv('./data/ml_training_data.csv')
 
     return bins
 
 if __name__ == "__main__":
-    processor("./data/SPY.csv")
+    processor("./data/forex2012to2018_data.csv")
 
 
 

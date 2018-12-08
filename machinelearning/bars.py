@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_finance import candlestick_ohlc
+from tqdm import tqdm
 
 
 class Bar:
@@ -69,7 +70,7 @@ def customBars(data, threshold, func, returnBars=False):
     raw_bars = []
     total = 0
     temp_bar = Bar()
-    for i, d in enumerate(dict_data):
+    for i, d in tqdm(enumerate(dict_data)):
         temp_bar.addTick(data.Date[i], d)
         total += func(d)
         if total > threshold:

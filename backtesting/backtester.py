@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from algorithms.Algorithms import wurtsAlgorithm, alwaysBuy, randomBuySell, keepAt50k, mlalgo, reset
 from algorithms.Nicholas_Algorithms import n_algorithm1, n_algorithm2, n_algorithm3
+from tqdm import tqdm
 STARTING_MONEY = 100000 # $100,000
 STOCK = 'SPY'
 
@@ -12,7 +13,7 @@ def backTester(algorithm, close_prices):
     value_history = []
     cash = STARTING_MONEY
     stock_owned = 0
-    for i, p in enumerate(close_prices):
+    for i, p in tqdm(enumerate(close_prices)):
         # print(str(i) + "/" + str(p))
         choice, amt = algorithm(p, cash, stock_owned)
         if choice == 'sell' and stock_owned != 0:
@@ -25,7 +26,8 @@ def backTester(algorithm, close_prices):
                 amt = int(cash / p)
             stock_owned += amt
             cash -= amt * p
-        
+        if i % 4000 == 0:
+            print(str(i), cash + stock_owned * p)
         value_history.append(cash + stock_owned * p)
     cash += stock_owned * close_prices[-1]
     return cash, value_history
@@ -34,13 +36,13 @@ def backTester(algorithm, close_prices):
 
 
 def start_backtest():
-    data = pd.read_csv('./data/AAPL_mongo.csv')
+    data = pd.read_csv('../data/forexjan2011_data.csv')
     
     print(min(data['Close']))
 
     
     algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
-    names = ["Wurts", "Always Buy", "Keep At 50k"]
+    names = ["Crossing MA", "Buy and Hold", "Machine Learning"]
     # algorithms = [n_algorithm1, n_algorithm2, n_algorithm3]
     # names = ['algo 1', 'algo 2', 'algo 3']
     _, axs = plt.subplots(len(algorithms), 1, sharex=True)
