@@ -1,6 +1,6 @@
-from sampling import cumsum
-from bars import dollarBars, Heikin_Ashi, tickBars, volumeBars
-from fracdiff import fracDiff
+from machinelearning.sampling import cumsum
+from machinelearning.bars import dollarBars, Heikin_Ashi, tickBars, volumeBars
+from machinelearning.fracdiff import fracDiff
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -165,8 +165,9 @@ if __name__ == "__main__":
     bins['start'] = tMinusl
 
     bins = createTrainingData(bins, data)    
+    bins.drop(['ret', 'start'], axis=1)
 
-    bins.to_csv('ml_training_data.csv')
+    bins.to_csv('./data/ml_training_data_clusterfuck.csv')
 
 
     
