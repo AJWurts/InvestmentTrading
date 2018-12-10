@@ -153,11 +153,11 @@ def processor(filename):
 
 
     print("Cumulative Summation Event Selector")
-    events = cumsum(bars, 0.0001)
+    events = cumsum(bars, 0.00001)
 
     print("Vertical Bars")
     t1 = addVerticalBarrier(events, data['Close'], numMinutes=120)
-    trgt = pd.Series(0.0008, index=t1.index)
+    trgt = pd.Series(0.00001, index=t1.index)
     side_ = pd.Series(1.,index=t1.index)
 
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
@@ -171,15 +171,15 @@ def processor(filename):
     bins = bins[bins.bin != 0]
 
     print("Add Start Time")
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=120)
+    tMinusl = addStartTime(bins, data['Close'], numMinutes=50)
 
     bins['start'] = tMinusl
 
     print("Creating Training Data")
-    bins = createTrainingData(bins, data, length=120)    
+    bins = createTrainingData(bins, data, length=50)    
     
     print("Saving")
-    bins.to_csv('./data/ml_training_data.csv')
+    bins.to_csv('./data/ml_training_data_2012-2018_2.csv')
 
     return bins
 

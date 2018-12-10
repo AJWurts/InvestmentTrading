@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from mpl_finance import candlestick_ohlc
+# from mpl_finance import candlestick_ohlc
 from tqdm import tqdm
 
 

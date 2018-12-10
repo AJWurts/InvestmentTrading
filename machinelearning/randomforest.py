@@ -9,7 +9,7 @@ def forestgenerator(bins=None):
   if bins is not None:
     df = bins
   else:
-    df = pd.read_csv('../data/ml_training_data.csv')
+    df = pd.read_csv('../data/ml_training_data1.7mil.csv')
   X = []
   for i in range(len(df)):
     c = df['data'][i]
@@ -27,11 +27,11 @@ def forestgenerator(bins=None):
 
 
   split = 0.9
-  train_X = X[:int(len(X)*split)]
-  train_y = df['bin'][:int(len(df)*split)].values
+  train_X = X
+  train_y = df['bin'].values
 
-  test_X = X[int(len(X)*split)+1:]
-  test_y = df['bin'][int(len(df)*split)+1:].values
+  # test_X = X[int(len(X)*split)+1:]
+  # test_y = df['bin'][int(len(df)*split)+1:].values
 
 
   forest = RandomForestClassifier(n_estimators=1, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
