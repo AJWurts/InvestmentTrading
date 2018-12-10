@@ -1,38 +1,39 @@
 from machinelearning.sampling import cumsum
 from machinelearning.bars import dollarBars, Heikin_Ashi, tickBars, volumeBars, customBars
 from machinelearning.fracdiff import fracDiff
+from machinelearning.triplebars import applyTripleBarrierLabeling
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 
-# Code straight from the book
-def applyTripleBarrierLabeling(close, events, ptSl):
-    """
-    Labels every point up, down or neutral
-    close: list of close prices
-    events: 
-        [t1: timestamp of vertical barrier ]
-    """
-    events_ = events
-    out = events_[['t1']].copy(deep=True)
-    if ptSl[0] > 0:
-        pt = ptSl[0] * events_['trgt']
-    else:
-        pt = pd.Series(index=events.index)
+
+# # Code straight from the book
+# def applyTripleBarrierLabeling(close, events, ptSl):
+#     """
+#     Labels every point up, down or neutral
+#     close: list of close prices
+#     events: 
+#         [t1: timestamp of vertical barrier ]
+#     """
+#     events_ = events
+#     out = events_[['t1']].copy(deep=True)
+#     if ptSl[0] > 0:
+#         pt = ptSl[0] * events_['trgt']
+#     else:
+#         pt = pd.Series(index=events.index)
     
-    if ptSl[1] > 0:
-            sl = -ptSl[1] * events_['trgt']
-    else:
-        sl = pd.Series(index=events.index)
+#     if ptSl[1] > 0:
+#             sl = -ptSl[1] * events_['trgt']
+#     else:
+#         sl = pd.Series(index=events.index)
 
-    for loc, t1 in tqdm(events_['t1'].fillna(close.index[-1]).iteritems()):
-        df0 = close[loc:t1] # Path Prices
-        df0 = (df0 / close[loc] - 1) * events_.at[loc, 'side'] # path prices
-        out.loc[loc, 'sl'] = df0[df0 < sl[loc]].index.min() # Earlist stop loss
-        out.loc[loc, 'pt'] = df0[df0 > pt[loc]].index.min() # Earlist profit taking
+#     for loc, t1 in tqdm(events_['t1'].fillna(close.index[-1]).iteritems(), total=len(events_)):
+#         df0 = close[loc:t1] # Path Prices
+#         df0 = (df0 / close[loc] - 1) * events_.at[loc, 'side'] # path prices
+#         out.loc[loc, 'sl'] = df0[df0 < sl[loc]].index.min() # Earlist stop loss
+#         out.loc[loc, 'pt'] = df0[df0 > pt[loc]].index.min() # Earlist profit taking
 
-    return out
+#     return out
 
 
 def getDailyVol(close,span0=50):
@@ -151,14 +152,14 @@ def processor(filename):
     print("Heikin Ashi Bars")
     bars = Heikin_Ashi(raw_bars)
     
-
+    
 
     print("Cumulative Summation Event Selector")
-    events = cumsum(bars, 0.00001)
+    events = cumsum(bars, 0.000001)
 
     print("Vertical Bars")
     t1 = addVerticalBarrier(events, data['Close'], numMinutes=120)
-    trgt = pd.Series(0.00001, index=t1.index)
+    trgt = pd.Series(0.000001, index=t1.index)
     side_ = pd.Series(1.,index=t1.index)
 
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
@@ -169,15 +170,15 @@ def processor(filename):
     print("Bins")
     bins = getBins(out, data['Close'])
 
-    bins = bins[bins.bin != 0]
+    # bins = bins[bins.bin != 0]
 
     print("Add Start Time")
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=50)
+    tMinusl = addStartTime(bins, data['Close'], numMinutes=150)
 
     bins['start'] = tMinusl
 
     print("Creating Training Data")
-    bins = createTrainingData(bins, data, length=50)    
+    bins = createTrainingData(bins, data, length=150)    
     
     print("Saving")
     bins.to_csv('./data/ml_training_data_2012-2018_2.csv')
@@ -185,7 +186,7 @@ def processor(filename):
     return bins
 
 if __name__ == "__main__":
-    processor("./data/forex_million.csv")
+    processor("./data/forex2012to2018_data.csv")
 
 
 

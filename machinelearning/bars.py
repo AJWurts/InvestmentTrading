@@ -70,7 +70,7 @@ def customBars(data, threshold, func, returnBars=False):
     raw_bars = []
     total = 0
     temp_bar = Bar()
-    for i, d in tqdm(enumerate(dict_data)):
+    for i, d in tqdm(enumerate(dict_data), total=len(dict_data)):
         temp_bar.addTick(data.Date[i], d)
         total += func(d)
         if total > threshold:
