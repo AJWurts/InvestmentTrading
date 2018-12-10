@@ -33,6 +33,6 @@ for name in tqdm(fileNames):
     break
 
 # _2015to2018 = df[df.index.year >= 2015]
-final_df.to_csv('../data/forex2011_data.csv')
+final_df.to_csv('../data/forex_million.csv')
 # final_df.to_csv("../data/forex_data.csv")
 
