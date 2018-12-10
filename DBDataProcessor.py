@@ -4,6 +4,7 @@ from machinelearning.fracdiff import fracDiff
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 # Code straight from the book
 def applyTripleBarrierLabeling(close, events, ptSl):
@@ -25,7 +26,7 @@ def applyTripleBarrierLabeling(close, events, ptSl):
     else:
         sl = pd.Series(index=events.index)
 
-    for loc, t1 in events_['t1'].fillna(close.index[-1]).iteritems():
+    for loc, t1 in tqdm(events_['t1'].fillna(close.index[-1]).iteritems()):
         df0 = close[loc:t1] # Path Prices
         df0 = (df0 / close[loc] - 1) * events_.at[loc, 'side'] # path prices
         out.loc[loc, 'sl'] = df0[df0 < sl[loc]].index.min() # Earlist stop loss
@@ -156,13 +157,13 @@ def processor(filename):
     events = cumsum(bars, 0.0001)
 
     print("Vertical Bars")
-    t1 = addVerticalBarrier(events, data['Close'], numMinutes=120)
+    t1 = addVerticalBarrier(events, data['Close'], numMinutes=50)
     trgt = pd.Series(0.0008, index=t1.index)
     side_ = pd.Series(1.,index=t1.index)
 
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
     
-    print("Triple Bars")
+    print("Triple Bars: ", len(t1))
     out = applyTripleBarrierLabeling(data['Close'], events, [1,1])
 
     print("Bins")
@@ -171,12 +172,12 @@ def processor(filename):
     bins = bins[bins.bin != 0]
 
     print("Add Start Time")
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=120)
+    tMinusl = addStartTime(bins, data['Close'], numMinutes=50)
 
     bins['start'] = tMinusl
 
     print("Creating Training Data")
-    bins = createTrainingData(bins, data, length=120)    
+    bins = createTrainingData(bins, data, length=50)    
     
     print("Saving")
     bins.to_csv('./data/ml_training_data.csv')
@@ -184,7 +185,7 @@ def processor(filename):
     return bins
 
 if __name__ == "__main__":
-    processor("./data/forex2012to2018_data.csv")
+    processor("./data/forex_million.csv")
 
 
 
