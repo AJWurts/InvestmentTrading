@@ -155,11 +155,11 @@ def processor(filename):
     
 
     print("Cumulative Summation Event Selector")
-    events = cumsum(bars, 0.000001)
+    events = cumsum(bars, 0.0001)
 
     print("Vertical Bars")
-    t1 = addVerticalBarrier(events, data['Close'], numMinutes=120)
-    trgt = pd.Series(0.000001, index=t1.index)
+    t1 = addVerticalBarrier(events, data['Close'], numMinutes=600)
+    trgt = pd.Series(0.0001, index=t1.index)
     side_ = pd.Series(1.,index=t1.index)
 
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
@@ -167,26 +167,27 @@ def processor(filename):
     print("Triple Bars: ", len(t1))
     out = applyTripleBarrierLabeling(data['Close'], events, [1,1])
 
+    out = out.sort_index()
     print("Bins")
     bins = getBins(out, data['Close'])
 
-    # bins = bins[bins.bin != 0]
+    bins = bins[bins.bin != 0]
 
     print("Add Start Time")
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=150)
+    tMinusl = addStartTime(bins, data['Close'], numMinutes=600)
 
     bins['start'] = tMinusl
 
     print("Creating Training Data")
-    bins = createTrainingData(bins, data, length=150)    
+    bins = createTrainingData(bins, data, length=600)    
     
     print("Saving")
-    bins.to_csv('./data/ml_training_data_2012-2018_2.csv')
+    bins.to_csv('./data/ml_training_all.csv')
 
     return bins
 
 if __name__ == "__main__":
-    processor("./data/forex2012to2018_data.csv")
+    processor("./data/forex_all.csv")
 
 
 

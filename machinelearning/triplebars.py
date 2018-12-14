@@ -124,7 +124,7 @@ def processJobs(jobs, task=None, numThreads=2, redux=None, reduxArgs={}, reduxIn
           redux = list.append
           reduxInPlace = True
         else:
-          put = copy(out_)
+          out = copy(out_)
     else:
       if reduxInPlace:
         redux(out, out_, **reduxArgs)
@@ -146,7 +146,7 @@ def expandCall(kargs):
   return out
 
 
-def mpPandasObj(func, pdObj, numThreads=2, mpBatches=1, linMols=True, redux=pd.DataFrame.append, reduxArgs={}, reduxInPlace=False, **kargs):
+def mpPandasObj(func, pdObj, numThreads=2, mpBatches=10, linMols=True, redux=pd.DataFrame.append, reduxArgs={}, reduxInPlace=False, **kargs):
   """
   Parallelize jobs, return a DataFrame or Series
   + func: function to be parallelized. Returns a DataFrame
@@ -175,6 +175,7 @@ def mpPandasObj(func, pdObj, numThreads=2, mpBatches=1, linMols=True, redux=pd.D
 
   return out
 
+
 def mpFunc(array, molecule):
   print(type(array))
   print(molecule)
@@ -187,6 +188,10 @@ def mpFunc(array, molecule):
   return out
 
 
+def reduxFx(df1, df2, **kargs):
+  return pd.concat([df1, df2])
+
+
 def applyTripleBarrierLabeling(close, events, ptSl):
     """
     Labels every point up, down or neutral
@@ -194,7 +199,7 @@ def applyTripleBarrierLabeling(close, events, ptSl):
     events: 
         [t1: timestamp of vertical barrier ]
     """
-    result = mpPandasObj(applyPtSlOnT1, ('molecule', events.index), redux=pd.DataFrame.append, close=close, ptSl=ptSl, events=events)
+    result = mpPandasObj(applyPtSlOnT1, ('molecule', events.index), close=close, ptSl=ptSl, events=events)
     return result
 
 if __name__ == "__main__":
