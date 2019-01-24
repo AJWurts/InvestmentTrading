@@ -140,11 +140,8 @@ if __name__ == "__main__":
     # dollar bars 1e11
     bars = Heikin_Ashi(raw_bars)
     
-
-
     events = cumsum(bars, 0.008)
     print(data.index)
-    # print(data.Date.searchsorted(data['Date'][:10], side='right'))
     
     t1 = addVerticalBarrier(events, data['Close'], numDays=5)
     trgt = pd.Series(0.005, index=t1.index)#dailyVol[t1.index]

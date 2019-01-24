@@ -36,8 +36,8 @@ def backTester(algorithm, close_prices):
 
 
 def start_backtest():
-    data = pd.read_csv('../data/forexjan2011_data.csv')
-    
+    # data = pd.read_csv('../data/forex_all.csv')
+    data = pd.read_csv('./forex2015to2018_data.csv')
     print(min(data['Close']))
 
     

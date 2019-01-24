@@ -122,16 +122,23 @@ def createTrainingData(bins, data, length=120, fracDiff=False):
     finish = close.index.searchsorted(bins.index)
 
     arrays = []
+    initRet = []
+
 
     for i in range(len(start)):
         s = start[i]
         f = finish[i]
-        arrays.append(close.values[s:f+1])
+        sVal = close.values[s]
+        fVal = close.values[f]
+        initRet.append(fVal - sVal)
+        arrays.append(np.array([i for i in np.array(close.values[s:f+1])]))
 
     training_arrays = pd.Series(arrays, index=bins.index)
+    initret = pd.Series(initRet, index=bins.index)
     mask = training_arrays.apply(lambda x: len(x) == length).values
     
     bins['data'] = training_arrays
+    bins['initret'] = initret
     bins = bins[mask]
     return bins
 
@@ -155,7 +162,7 @@ def processor(filename):
     
 
     print("Cumulative Summation Event Selector")
-    events = cumsum(bars, 0.0001)
+    events = cumsum(bars, 0.0004)
 
     print("Vertical Bars")
     t1 = addVerticalBarrier(events, data['Close'], numMinutes=600)
@@ -174,20 +181,20 @@ def processor(filename):
     bins = bins[bins.bin != 0]
 
     print("Add Start Time")
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=600)
+    tMinusl = addStartTime(bins, data['Close'], numMinutes=200)
 
     bins['start'] = tMinusl
 
     print("Creating Training Data")
-    bins = createTrainingData(bins, data, length=600)    
+    bins = createTrainingData(bins, data, length=200)    
     
     print("Saving")
-    bins.to_csv('./data/ml_training_all.csv')
+    bins.to_csv('./data/ml_training_0009.csv')
 
     return bins
 
 if __name__ == "__main__":
-    processor("./data/forex_all.csv")
+    processor("./data/forex2012to2018_data.csv")
 
 
 

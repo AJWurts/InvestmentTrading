@@ -75,7 +75,7 @@ def mlalgo(p, cash, stockOwned):
         mlalgoHasRun = True
         w = 0
         # w = getWeights(0.5)
-        clf = load('../machinelearning/saved_classifiers/randomforest_120larger.joblib')
+        clf = load('../machinelearning/saved_classifiers/randomforest_0008.joblib')
 
     # if len(previous_data) > len(w):
     #     val = np.dot(w.T, previous_data[-len(w):])
@@ -84,27 +84,27 @@ def mlalgo(p, cash, stockOwned):
     #         diff_data.append(val[0])
 
     flag = True
-    threshold = 0.001
+    threshold = 0.0008
     w += 1
-    # if len(previous_data) > 1:
-    #     pos = max(0, pos + (p - previous_data[-2]))
-    #     neg = min(0, neg + (p - previous_data[-2]))
+    if len(previous_data) > 1:
+        pos = max(0, pos + (p - previous_data[-2]))
+        neg = min(0, neg + (p - previous_data[-2]))
 
-    #     if pos > threshold:
-    #         flag = True
-    #         pos = 0
-    #     elif neg < -threshold:
-    #         flag = True
-    #         neg = 0
+        if pos > threshold:
+            flag = True
+            pos = 0
+        elif neg < -threshold:
+            flag = True
+            neg = 0
 
 
-    if len(previous_data) > 50 and flag  and w > 10:
+    if len(previous_data) > 200 and flag  and w > 10:
         w = 0
-        result = clf.predict([previous_data[-50:]])[0]
+        result = clf.predict([previous_data[-200:]])[0]
         if result == 1:
             return 'buy', 5000
         else:
-            return 'sell', 10000
+            return 'sell', 5000
         
 
     return 'Do Nothing', 10
