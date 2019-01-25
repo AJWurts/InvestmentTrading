@@ -30,12 +30,12 @@ X = np.array(X)
 grad = (X[:,1:] - X[:,:-1]) / X[:,:-1]
 # abovePoint1 = df
 # abovePoint1.plot(x='initret', y='ret', kind='scatter')
-clusters = 10
+clusters = 5
 clf = KMeans(n_clusters=clusters)
 
-kmeans = clf.fit(grad)
+kmeans = clf.fit(X)
 
-predictions = kmeans.predict(grad)
+predictions = kmeans.predict(X)
 unique = np.unique(predictions, return_counts=True)
 
 data = [[0,0] for i in range(clusters)]
