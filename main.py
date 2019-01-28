@@ -1,7 +1,7 @@
 
 from DBDataProcessor import processor
-from randomforest import forestgenerator
-from backtester import start_backtest
+from machinelearning.randomforest import forestgenerator
+from backtesting.backtester import start_backtest
 import sys
 
 print('Processing csv file')
