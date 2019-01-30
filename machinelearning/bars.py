@@ -51,16 +51,17 @@ def Heikin_Ashi(bars, returnBars=False):
         newBar.date = bars[i].date
         cur = bars[i]
         prev = result[i-1]
-        newBar.close = (cur.open +  cur.high + cur.low + cur.close) / 4
+        newBar.close = (cur.open + cur.high + cur.low + cur.close) / 4
         newBar.open = (prev.close + prev.open) / 2
         newBar.high = max([cur.high, newBar.open, newBar.close])
         newBar.low = min([cur.low, newBar.open, newBar.close])
         result.append(newBar)
-        df_result.append([newBar.date, newBar.close])
-    
+        df_result.append([newBar.date, newBar.close,
+                           newBar.high, newBar.low, newBar.open])
+
     if returnBars:
         return result
-    df = pd.DataFrame(df_result, columns=['Date', "Close"])
+    df = pd.DataFrame(df_result, columns=['Date', "Close", "High", "Low", "Open"])
     return df.set_index('Date')
 
 
@@ -75,17 +76,19 @@ def customBars(data, threshold, func, returnBars=False):
         total += func(d)
         if total > threshold:
             temp_bar.updateLastTick(threshold)
-            bars.append([temp_bar.date, temp_bar.close])
+            bars.append([temp_bar.date, temp_bar.close,
+                         temp_bar.high, temp_bar.low, temp_bar.open])
             raw_bars.append(temp_bar)
             temp_bar = Bar()
             total = total - threshold
 
-    if temp_bar.high is not None: # High chosen arbitrarily 
+    if temp_bar.high is not None:  # High chosen arbitrarily
         temp_bar.updateLastTick(threshold)
         raw_bars.append(temp_bar)
-        bars.append([temp_bar.date, temp_bar.close])
+        bars.append([temp_bar.date, temp_bar.close,
+                     temp_bar.high, temp_bar.low, temp_bar.open])
 
-    df = pd.DataFrame(bars, columns=['Date', "Close"])
+    df = pd.DataFrame(bars, columns=['Date', "Close", "High", "Low", "Open"])
     if returnBars:
         return df, raw_bars
     return df
@@ -108,7 +111,7 @@ def dollarBars(data, threshold, returnBars=False):
             temp_bar = Bar()
             total = total - threshold
 
-    if temp_bar.high is not None: # High chosen arbitrarily 
+    if temp_bar.high is not None:  # High chosen arbitrarily
         temp_bar.updateLastTick(threshold)
         raw_bars.append(temp_bar)
         bars.append([temp_bar.date, temp_bar.close])
@@ -135,7 +138,7 @@ def tickBars(data, threshold, returnBars=False):
             temp_bar = Bar()
             total = total - threshold
 
-    if temp_bar.high is not None: # High chosen arbitrarily 
+    if temp_bar.high is not None:  # High chosen arbitrarily
         temp_bar.updateLastTick(threshold)
         raw_bars.append(temp_bar)
         bars.append([temp_bar.date, temp_bar.close])
@@ -180,16 +183,16 @@ def plotBars(time, bars, ax, color='g'):
     _high = [bar.high for bar in bars]
     _low = [bar.low for bar in bars]
 
-    candlestick_ohlc(ax, zip(index, _open, _high, _low, _close), colorup='g', width=0.6)
+    candlestick_ohlc(ax, zip(index, _open, _high, _low,
+                             _close), colorup='g', width=0.6)
+
 
 def main():
     data = pd.read_csv('SPY.csv', parse_dates=[0])
 
-
     dbars, rawBars = dollarBars(data, 2e11, returnBars=True)
 
     haBars = Heikin_Ashi(rawBars, returnBars=True)
-
 
     ax1 = plt.subplot(211)
     plt.title('Heikin_Ashi Transformation')
@@ -198,4 +201,3 @@ def main():
     ax2.set_title('Standard Bars')
     plotBars(dbars, rawBars, ax2)
     plt.show()
-

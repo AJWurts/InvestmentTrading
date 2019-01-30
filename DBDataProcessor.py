@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 # # Code straight from the book
 # def applyTripleBarrierLabeling(close, events, ptSl):
 #     """
@@ -115,12 +114,12 @@ def createTrainingData(bins, data, length=120, fracDiff=False):
     # Bins
     if fracDiff:
         diff = fracDiff(data)
-        close = diff['Close']
+        data = data[['Close', 'High', 'Open', 'Low']]
     else:
-        close = data['Close']
-    start = close.index.searchsorted(bins['start'].values)
-    finish = close.index.searchsorted(bins.index)
-
+        data = data[['Close', 'High', 'Open', 'Low']]
+    start = data['Close'].index.searchsorted(bins['start'].values)
+    finish = data['Close'].index.searchsorted(bins.index)
+    print(start, finish)
     arrays = []
     initRet = []
 
@@ -128,30 +127,31 @@ def createTrainingData(bins, data, length=120, fracDiff=False):
     for i in range(len(start)):
         s = start[i]
         f = finish[i]
-        sVal = close.values[s]
-        fVal = close.values[f]
+        sVal = data['Close'].values[s]
+        fVal = data['Close'].values[f]
         initRet.append(fVal - sVal)
-        arrays.append(np.array([i for i in np.array(close.values[s:f+1])]))
+        arrays.append(np.array([i for i in np.array(data.values[s:f+1])]))
 
     training_arrays = pd.Series(arrays, index=bins.index)
     initret = pd.Series(initRet, index=bins.index)
-    mask = training_arrays.apply(lambda x: len(x) == length).values
+    # mask = training_arrays.apply(lambda x: len(x) == length).values
     
     bins['data'] = training_arrays
     bins['initret'] = initret
-    bins = bins[mask]
+    # bins = bins[mask]
     return bins
 
 
     
 def processor(filename):
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+    dparse2 = lambda x: pd.datetime.strptime(x, '%m/%d/%y')
     print("Loading CSV")
-    data = pd.read_csv(filename, parse_dates=[0], date_parser=dateparse)
+    data = pd.read_csv(filename, parse_dates=[0],  date_parser=dateparse)
     
    
     print("Creating Bars")
-    bars, raw_bars = customBars(data, 10, lambda x: 1, returnBars=True)  
+    bars, raw_bars = customBars(data, 1, lambda x: 1, returnBars=True)  
     data = data.set_index('Date')
     # dollar bars 1e11 for days
     # dollar bar for minutes = 3.6e7
@@ -165,15 +165,13 @@ def processor(filename):
     events = cumsum(bars, 0.0004)
 
     print("Vertical Bars")
-    t1 = addVerticalBarrier(events, data['Close'], numMinutes=600)
+    t1 = addVerticalBarrier(events, data['Close'], numMinutes=50)
     trgt = pd.Series(0.0001, index=t1.index)
     side_ = pd.Series(1.,index=t1.index)
-
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
     
-    print("Triple Bars: ", len(t1))
     out = applyTripleBarrierLabeling(data['Close'], events, [1,1])
-
+    print("Bins after triple barrier: ", out)
     out = out.sort_index()
     print("Bins")
     bins = getBins(out, data['Close'])
@@ -181,12 +179,12 @@ def processor(filename):
     bins = bins[bins.bin != 0]
 
     print("Add Start Time")
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=200)
+    tMinusl = addStartTime(bins, data['Close'], numMinutes=50)
 
     bins['start'] = tMinusl
 
     print("Creating Training Data")
-    bins = createTrainingData(bins, data, length=200)    
+    bins = createTrainingData(bins, data, length=30)    
     
     print("Saving")
     bins.to_csv('./data/ml_training_0009.csv')
@@ -194,7 +192,7 @@ def processor(filename):
     return bins
 
 if __name__ == "__main__":
-    processor("./data/forex2012to2018_data.csv")
+    processor("./data/NVDA_mongo.csv")
 
 
 
