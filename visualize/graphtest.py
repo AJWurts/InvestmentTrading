@@ -29,7 +29,7 @@ for i in range(len(df)):
 X = np.array(X)
 grad = (X[:,1:] - X[:,:-1]) / X[:,:-1]
 # abovePoint1 = df
-# abovePoint1.plot(x='initret', y='ret', kind='scatter')
+# abovePoint1.plot(x='initret', y='ret', ='scatter')
 clusters = 5
 clf = KMeans(n_clusters=clusters)
 

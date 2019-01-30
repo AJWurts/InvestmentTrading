@@ -11,7 +11,7 @@ point it seems like im just blindly stumbling around in the dark hoping to find 
 additional resource other than advances in financial machine learning in order to have a different perspective on
 what I should do next. I also need to learn about LSTM more and how it works. It does not function as I originally
 assumed.
-  I need to be more scientific about my results. Or even better not use the results are data. Back testing is way
+  I need to be more scientific about my results. Or even better not use the results as data. Back testing is way
 too easily done incorrectly and chances are the way I'm doing it is not producing any valuable data. I need to 
 determine a way of interpreting the classification results without backtesting. I think I may do some sort of 
 analysis with kmeans clustering on the training data to see what the various types of data there is and then the
@@ -35,7 +35,7 @@ systematically test them.
 the following:
   1. Algorithm to decide when to trade
   2. Algorithm to decide how much to buy/sell. Might be separate
-  3. Algorithm to decide which available asset to trade
+  3. Decide how to set stop loss and profit taking points
 
   Currently I am more on track to generate a fully autonomous trader, but I think a good middle step before a 
 fully auto trader would be a machine trader with a human guide. I think humans dont need to be taken out of the
@@ -61,3 +61,6 @@ then determining if it can use that data to trade effectively?
 1/22/2019
   - I am going to make focus on the visualization aspect and do some research. Maybe I can visualize something
 that I can utilize with a ML algorithm. tableau to start then moving to d3 for a better visualization.
+
+1/28/2019
+  -Focused on trading for a while to try and focus on various methods I could use for trading. 

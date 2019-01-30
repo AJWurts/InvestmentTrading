@@ -9,11 +9,11 @@ from machinelearning.triplebars import mpPandasObj
 millisecond_parse = lambda x: pd.Timedelta(milliseconds=int(x))
 dateParseString = '%Y%m%d'
 
-def loadFile(fileNames, molecule):
+def loadFile(fileNames, molecule=None):
   final_df = None
   print(molecule)
-  fileNames_ = fileNames[molecule]
-  for name in fileNames_:
+  # fileNames_ = fileNames[molecule]
+  for name in fileNames:
     
     date = datetime.strptime(name.split('_')[1][-8:], dateParseString)
     df = pd.read_csv(name, header=0, index_col=0, date_parser=millisecond_parse, parse_dates=[0],
