@@ -9,7 +9,7 @@ def forestgenerator(bins=None):
   if bins is not None:
     df = bins
   else:
-    df = pd.read_csv('../data/ml_training_0008.csv')
+    df = pd.read_csv('../data/ml_training_0009.csv')
   X = []
   for i in range(len(df)):
     c = df['data'][i]
@@ -20,6 +20,7 @@ def forestgenerator(bins=None):
     result = result[result != '']
     result = list(map(lambda x: float(x), result))
 
+    # result = [result[i:i+4] for i in range(0, len(result), 4)]
     X.append(result)
 
   min_length = min([len(d) for d in X])

@@ -130,12 +130,12 @@ def createTrainingData(bins, data, length=120, fracDiff=False):
         sVal = data['Close'].values[s]
         fVal = data['Close'].values[f]
         initRet.append(fVal - sVal)
-        arrays.append(np.array([i for i in np.array(data.values[s:f+1])]))
+        arrays.append(np.array([i for i in np.array(data.values[s:f+1]).flatten()]))
+
 
     training_arrays = pd.Series(arrays, index=bins.index)
     initret = pd.Series(initRet, index=bins.index)
-    # mask = training_arrays.apply(lambda x: len(x) == length).values
-    
+    print(training_arrays)
     bins['data'] = training_arrays
     bins['initret'] = initret
     # bins = bins[mask]
@@ -165,7 +165,7 @@ def processor(filename):
     events = cumsum(bars, 0.0004)
 
     print("Vertical Bars")
-    t1 = addVerticalBarrier(events, data['Close'], numMinutes=50)
+    t1 = addVerticalBarrier(events, data['Close'], numMinutes=15)
     trgt = pd.Series(0.0001, index=t1.index)
     side_ = pd.Series(1.,index=t1.index)
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
@@ -179,12 +179,12 @@ def processor(filename):
     bins = bins[bins.bin != 0]
 
     print("Add Start Time")
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=50)
+    tMinusl = addStartTime(bins, data['Close'], numMinutes=15)
 
     bins['start'] = tMinusl
 
     print("Creating Training Data")
-    bins = createTrainingData(bins, data, length=30)    
+    bins = createTrainingData(bins, data, length=10)    
     
     print("Saving")
     bins.to_csv('./data/ml_training_0009.csv')
