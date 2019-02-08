@@ -21,7 +21,10 @@ for i in range(len(df)):
     result = result[result != '']
     result = [_ for _ in map(lambda x: float(x), result)]
 
-    X.append(result)
+    X.append(np.array(result))
+
+X = np.array(X)
+X = (X[:,1:] - X[:,:-1]) / X[:,:-1]
 
 min_length = min([len(d) for d in X])
 X = [x[:50] for x in X if len(x) >= 50]
