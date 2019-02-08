@@ -35,9 +35,9 @@ def forestgenerator(bins=None):
   # test_y = df['bin'][int(len(df)*split)+1:].values
 
 
-  forest = RandomForestClassifier(n_estimators=1, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
+  forest = RandomForestClassifier(n_estimators=3, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
 
-  bc = BaggingClassifier(base_estimator=forest, n_estimators=1000)
+  bc = BaggingClassifier(base_estimator=forest, n_estimators=100)
 
   bc.fit(train_X, train_y)
 

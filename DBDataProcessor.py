@@ -109,17 +109,16 @@ def getBins(events, close):
     return out
 
 
-def createTrainingData(bins, data, length=120, fracDiff=False):
+def createTrainingData(bins, data, length=120, fd=False):
     # print(close)
     # Bins
-    if fracDiff:
+    if fd:
         diff = fracDiff(data)
-        data = data[['Close', 'High', 'Open', 'Low']]
+        data = diff[['Close', 'High', 'Open', 'Low']]
     else:
         data = data[['Close', 'High', 'Open', 'Low']]
     start = data['Close'].index.searchsorted(bins['start'].values)
     finish = data['Close'].index.searchsorted(bins.index)
-    print(start, finish)
     arrays = []
     initRet = []
 
@@ -135,7 +134,6 @@ def createTrainingData(bins, data, length=120, fracDiff=False):
 
     training_arrays = pd.Series(arrays, index=bins.index)
     initret = pd.Series(initRet, index=bins.index)
-    print(training_arrays)
     bins['data'] = training_arrays
     bins['initret'] = initret
     # bins = bins[mask]
@@ -145,13 +143,13 @@ def createTrainingData(bins, data, length=120, fracDiff=False):
     
 def processor(filename):
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
-    dparse2 = lambda x: pd.datetime.strptime(x, '%m/%d/%y')
+    dparse2 = lambda x: pd.datetime.strptime(x, '%m/%d/%Y')
     print("Loading CSV")
-    data = pd.read_csv(filename, parse_dates=[0],  date_parser=dateparse)
+    data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dparse2)
     
    
     print("Creating Bars")
-    bars, raw_bars = customBars(data, 1, lambda x: 1, returnBars=True)  
+    bars, raw_bars = customBars(data, 1e11, lambda x: x['Volume'] * x['Close'], returnBars=True)  
     data = data.set_index('Date')
     # dollar bars 1e11 for days
     # dollar bar for minutes = 3.6e7
@@ -162,10 +160,10 @@ def processor(filename):
     
 
     print("Cumulative Summation Event Selector")
-    events = cumsum(bars, 0.0004)
+    events = cumsum(bars, 0.01967)
 
     print("Vertical Bars")
-    t1 = addVerticalBarrier(events, data['Close'], numMinutes=15)
+    t1 = addVerticalBarrier(events, data['Close'], numDays=3)
     trgt = pd.Series(0.0001, index=t1.index)
     side_ = pd.Series(1.,index=t1.index)
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
@@ -179,20 +177,20 @@ def processor(filename):
     bins = bins[bins.bin != 0]
 
     print("Add Start Time")
-    tMinusl = addStartTime(bins, data['Close'], numMinutes=15)
+    tMinusl = addStartTime(bins, data['Close'], numDays=10)
 
     bins['start'] = tMinusl
 
     print("Creating Training Data")
-    bins = createTrainingData(bins, data, length=10)    
+    bins = createTrainingData(bins, data, length=8, fd=True)    
     
     print("Saving")
-    bins.to_csv('./data/ml_training_0009.csv')
+    bins.to_csv('./data/spy_training_0001.csv')
 
     return bins
 
 if __name__ == "__main__":
-    processor("./data/NVDA_mongo.csv")
+    processor("./data/SPY_93.csv")
 
 
 

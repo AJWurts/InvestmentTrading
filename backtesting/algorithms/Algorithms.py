@@ -2,11 +2,12 @@ import matplotlib.pyplot as plt
 from random import randint
 import numpy as np
 from joblib import load
-# from machinelearning.fracdiff import getWeights
+from machinelearning.fracdiff import getWeights
 
 mlalgoHasRun = False
 clf = None
-w = None
+weights = None
+flag = False
 previous_data = []
 diff_data = []
 
@@ -44,7 +45,10 @@ def wurtsAlgorithm(p, cash, stockOwned):
 
 
 def alwaysBuy(p, cash, stockOwned):
-    return 'buy', 1000000
+    if (cash > p):
+        return 'buy', 1000000
+    else:
+        return 'do_nothing', 0
 
 
 def keepAt50k(p, cash, stockOwned):
@@ -68,28 +72,24 @@ def randomBuySell(p, cash, stockOwned):
 
 
 def mlalgo(p, cash, stockOwned):
-    global pos, neg, mlalgoHasRun, clf, previous_data, w, diff_data
+    global pos, neg, mlalgoHasRun, clf, previous_data, weights, diff_data, flag
     previous_data.append(p)
 
     if not mlalgoHasRun:
         mlalgoHasRun = True
-        w = 0
-        # w = getWeights(0.5)
-        clf = load('../machinelearning/saved_classifiers/randomforest_nvda_4.joblib')
+        weights = getWeights(0.5)
+        clf = load('./machinelearning/saved_classifiers/randomforest_spy_93_less.joblib')
 
-    # if len(previous_data) > len(w):
-    #     val = np.dot(w.T, previous_data[-len(w):])
-    #     # print(val)
-    #     if not np.isnan(val[0]):
-    #         diff_data.append(val[0])
+    if len(previous_data) > len(weights):
+        val = np.dot(weights.T, previous_data[-len(weights):])
+        if not np.isnan(val[0]):
+            diff_data.append(val[0])
 
-    flag = True
-    threshold = 0.0008
-    w += 1
+    flag = False
+    threshold = 0.015
     if len(previous_data) > 1:
-        pos = max(0, pos + (p - previous_data[-2]))
-        neg = min(0, neg + (p - previous_data[-2]))
-
+        pos = max(0, pos + ((p - previous_data[-2]) / previous_data[-2]))
+        neg = min(0, neg + ((p - previous_data[-2]) / previous_data[-2]))
         if pos > threshold:
             flag = True
             pos = 0
@@ -98,13 +98,13 @@ def mlalgo(p, cash, stockOwned):
             neg = 0
 
 
-    if len(previous_data) > 200 and flag  and w > 10:
-        w = 0
-        result = clf.predict([previous_data[-200:]])[0]
+    if len(previous_data) >= 4 and flag:
+        result = clf.predict([previous_data[-4:]])[0]
         if result == 1:
-            return 'buy', 5000
+            return 'buy', 10000
         else:
-            return 'sell', 5000
+            return 'sell', 10000
+        flag = False
         
 
     return 'Do Nothing', 10

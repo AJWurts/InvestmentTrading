@@ -22,11 +22,7 @@ def fracDiff(series, d=0.5, thres=0.01):
 	# Compute Weights
 	w = getWeights(d, thres)
 	width = len(w) - 1
-	# Determine initial calcs to be skipped based on weight-loss threshold
-	# w_ = np.cumsum(abs(w))
-	# w_ /= w_[-1]
-	# skip = w_[w_>thres].shape[0]
-	# Apply weights to values
+
 	df = {}
 	for name in series.columns:
 		seriesF, df_ = series[[name]].fillna(method='ffill').dropna(), pd.Series()
@@ -63,3 +59,8 @@ def plotExample():
 			axs[i].set_title("d: " + str(algo))
 			df_.plot(ax=axs[i])
 	plt.show()
+
+
+if __name__ == "__main__":
+	df = getFracDiffCSV("../data/SPY_2019.csv")
+	df.to_csv("../data/SPY_2019_frac.csv")
