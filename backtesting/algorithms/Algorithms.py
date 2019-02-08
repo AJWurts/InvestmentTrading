@@ -86,7 +86,7 @@ def mlalgo(p, cash, stockOwned):
             diff_data.append(val[0])
 
     flag = False
-    threshold = 0.015
+    threshold = 0.01
     if len(previous_data) > 1:
         pos = max(0, pos + ((p - previous_data[-2]) / previous_data[-2]))
         neg = min(0, neg + ((p - previous_data[-2]) / previous_data[-2]))
@@ -100,10 +100,10 @@ def mlalgo(p, cash, stockOwned):
 
     if len(previous_data) >= 4 and flag:
         result = clf.predict([previous_data[-4:]])[0]
-        if result == 1:
-            return 'buy', 10000
+        if result == 1 and cash > p:
+            return 'buy', 500
         else:
-            return 'sell', 10000
+            return 'sell', 500
         flag = False
         
 
