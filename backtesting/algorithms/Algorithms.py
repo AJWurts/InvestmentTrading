@@ -75,7 +75,7 @@ def mlalgo(p, cash, stockOwned):
         mlalgoHasRun = True
         w = 0
         # w = getWeights(0.5)
-        clf = load('../machinelearning/saved_classifiers/randomforest_0008.joblib')
+        clf = load('../machinelearning/saved_classifiers/randomforest_nvda_4.joblib')
 
     # if len(previous_data) > len(w):
     #     val = np.dot(w.T, previous_data[-len(w):])
