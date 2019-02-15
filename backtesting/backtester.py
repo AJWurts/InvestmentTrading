@@ -9,6 +9,7 @@ from algorithms.Algorithms import wurtsAlgorithm, alwaysBuy, randomBuySell, keep
 from algorithms.Nicholas_Algorithms import n_algorithm1, n_algorithm2, n_algorithm3
 from machinelearning.fracdiff import fracDiff, getWeights
 from tqdm import tqdm
+from trade import Position
 STARTING_MONEY = 100000 # $100,000
 COMMISSION = 5 # $5 commission
 STOCK = 'SPY'
@@ -69,21 +70,33 @@ def backTester(algorithm, close_prices):
     cash = STARTING_MONEY
     stock_owned = 0
     trades = Trades()
+    positions = []
     for i, p in tqdm(enumerate(close_prices), total=len(close_prices)):
         # print(str(i) + "/" + str(p))
         choice, amt = algorithm(p, cash, stock_owned)
-        if choice == 'sell' and stock_owned != 0:
-            trades.addTrade(Trade(i, cash + stock_owned * p, 'sell'))
-            if stock_owned - amt < 0:
-                amt = stock_owned
-            cash += (amt * p + COMMISSION)
-            stock_owned -= amt
-        elif choice == 'buy':
+        # if choice == 'sell' and stock_owned != 0:
+        #     trades.addTrade(Trade(i, cash + stock_owned * p, 'sell'))
+        #     # if stock_owned - amt < 0:
+        #     #     amt = stock_owned
+        #     # cash += (amt * p + COMMISSION)
+        #     # stock_owned -= amt
+        if choice == 'buy':
+            positions.append(Position(amt, p * 1.01, p * 0.99, i + 5))
             trades.addTrade(Trade(i, cash + stock_owned * p, 'buy'))
-            if cash < amt * p:
-                amt = int(cash / p)
-            stock_owned += amt
-            cash -= (amt * p + COMMISSION)
+            # if cash < amt * p:
+            #     amt = int(cash / p)
+            # stock_owned += amt
+            # cash -= (amt * p + COMMISSION)
+        keepPositions = []
+        for pos in positions:
+            if pos.sl >= p or pos.pt <= p or pos.exp > i:
+                cash += (pos.qtn * p + COMMISSION)
+            else:
+                keepPositions.append(p)
+        
+        positions = keepPositions[:]
+            
+            
         if i % 500 == 0:
             print(str(i), cash + stock_owned * p)
         value_history.append(cash + stock_owned * p)
