@@ -9,7 +9,7 @@ def forestgenerator(bins=None):
   if bins is not None:
     df = bins
   else:
-    df = pd.read_csv('../data/de_training_0001.csv')
+    df = pd.read_csv('../data/training_std.csv')
   X = []
   for i in range(len(df)):
     c = df['data'][i]
@@ -37,11 +37,11 @@ def forestgenerator(bins=None):
 
   forest = RandomForestClassifier(n_estimators=3, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
 
-  bc = BaggingClassifier(base_estimator=forest, n_estimators=100)
+  bc = BaggingClassifier(base_estimator=forest, n_estimators=50)
 
   bc.fit(train_X, train_y)
 
-  dump(bc, 'randomforest.joblib')
+  dump(bc, './saved_classifiers/randomforest.joblib')
 
 
   # print(bc.score(test_X, test_y))

@@ -85,7 +85,7 @@ def createTrainingData(bins, data, length=120, fd=False):
     # print(close)
     # Bins
     if fd:
-        diff = fracDiff(data)
+        diff = fracDiff(data, d=0.75)
         data = diff[['Close', 'High', 'Open', 'Low']]
     else:
         data = data[['Close', 'High', 'Open', 'Low']]
@@ -105,6 +105,7 @@ def createTrainingData(bins, data, length=120, fd=False):
 
 
     training_arrays = pd.Series(arrays, index=bins.index)
+    training_arrays = training_arrays[training_arrays.map(len) > 8]
     initret = pd.Series(initRet, index=bins.index)
     bins['data'] = training_arrays
     bins['initret'] = initret
@@ -158,7 +159,7 @@ def processor(filename):
     bins = createTrainingData(bins, data, length=8, fd=True)    
     
     print("Saving")
-    bins.to_csv('./data/de_training_0001.csv')
+    bins.to_csv('./data/training_std.csv')
 
     return bins
 
