@@ -6,34 +6,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# # Code straight from the book
-# def applyTripleBarrierLabeling(close, events, ptSl):
-#     """
-#     Labels every point up, down or neutral
-#     close: list of close prices
-#     events: 
-#         [t1: timestamp of vertical barrier ]
-#     """
-#     events_ = events
-#     out = events_[['t1']].copy(deep=True)
-#     if ptSl[0] > 0:
-#         pt = ptSl[0] * events_['trgt']
-#     else:
-#         pt = pd.Series(index=events.index)
-    
-#     if ptSl[1] > 0:
-#             sl = -ptSl[1] * events_['trgt']
-#     else:
-#         sl = pd.Series(index=events.index)
-
-#     for loc, t1 in tqdm(events_['t1'].fillna(close.index[-1]).iteritems(), total=len(events_)):
-#         df0 = close[loc:t1] # Path Prices
-#         df0 = (df0 / close[loc] - 1) * events_.at[loc, 'side'] # path prices
-#         out.loc[loc, 'sl'] = df0[df0 < sl[loc]].index.min() # Earlist stop loss
-#         out.loc[loc, 'pt'] = df0[df0 > pt[loc]].index.min() # Earlist profit taking
-
-#     return out
-
 
 def getDailyVol(close,span0=50):
     # daily vol reindexed to close
@@ -144,12 +116,13 @@ def createTrainingData(bins, data, length=120, fd=False):
 def processor(filename):
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
     dparse2 = lambda x: pd.datetime.strptime(x, '%m/%d/%Y')
+    dateparse3 = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     print("Loading CSV")
-    data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dparse2)
+    data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dateparse3)
     
    
     print("Creating Bars")
-    bars, raw_bars = customBars(data, 1e11, lambda x: x['Volume'] * x['Close'], returnBars=True)  
+    bars, raw_bars = customBars(data, 6630779.968, lambda x: x['Volume'] * x['Close'], returnBars=True)  
     data = data.set_index('Date')
     # dollar bars 1e11 for days
     # dollar bar for minutes = 3.6e7
@@ -160,7 +133,7 @@ def processor(filename):
     
 
     print("Cumulative Summation Event Selector")
-    events = cumsum(bars, 0.01967)
+    events = cumsum(bars, 0.0300)
 
     print("Vertical Bars")
     t1 = addVerticalBarrier(events, data['Close'], numDays=3)
@@ -185,12 +158,12 @@ def processor(filename):
     bins = createTrainingData(bins, data, length=8, fd=True)    
     
     print("Saving")
-    bins.to_csv('./data/spy_training_0001.csv')
+    bins.to_csv('./data/de_training_0001.csv')
 
     return bins
 
 if __name__ == "__main__":
-    processor("./data/SPY_93.csv")
+    processor("./data/DE.csv")
 
 
 

@@ -9,7 +9,7 @@ def forestgenerator(bins=None):
   if bins is not None:
     df = bins
   else:
-    df = pd.read_csv('../data/ml_training_0009.csv')
+    df = pd.read_csv('../data/de_training_0001.csv')
   X = []
   for i in range(len(df)):
     c = df['data'][i]
