@@ -88,7 +88,6 @@ def backTester(algorithm, close_prices, pt=1.01, sl=0.99, exp=5):
                 amt = int(cash / p)
             positions.append(Position(i, amt, p * sl, p * pt, i + exp))
             trades.addTrade(Trade(i, amt, 'buy'))
-
             stock_owned += amt
             cash -= (amt * p + COMMISSION)
 
