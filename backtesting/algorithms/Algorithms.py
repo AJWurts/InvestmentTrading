@@ -26,10 +26,10 @@ def wurtsAlgorithm(p, cash, stockOwned):
     previous_data.append(p)
 
     if len(previous_data) >= 10:
-        ma_10.append(MA(50))
+        ma_10.append(MA(10))
 
     if len(previous_data) >= 20:
-        ma_20.append(MA(200))
+        ma_20.append(MA(20))
 
     if len(ma_20) > 2:
         # cross up

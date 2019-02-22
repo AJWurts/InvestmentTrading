@@ -9,3 +9,5 @@ data/forex2015to2018_data.csv
 machinelearning/saved_classifiers/*
 data/*
 *.joblib
+*.pyc
+machinelearning/__pycache__/fracdiff.cpython-36.pyc
