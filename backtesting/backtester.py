@@ -65,7 +65,7 @@ class Trades:
         return str(self.tradeLog)
 
 
-def backTester(algorithm, close_prices, pt=1.01, sl=0.99, exp=5):
+def backTester(algorithm, close_prices, pt=1.01, sl=0.99, exp=5, ticker='UNH'):
     value_history = []
     cash = STARTING_MONEY
     stock_owned = 0
@@ -73,7 +73,7 @@ def backTester(algorithm, close_prices, pt=1.01, sl=0.99, exp=5):
     historical_positions = []
     positions = []
     for i, p in tqdm(enumerate(close_prices), total=len(close_prices)):
-        choice, amt = algorithm(p, cash, stock_owned)
+        choice, amt = algorithm(p, cash, stock_owned, ticker=ticker)
         keepPositions = []
         for pos in positions:
             if pos.sl >= p or pos.pt <= p or pos.exp <= i or i == len(close_prices) - 1:
@@ -101,9 +101,9 @@ def backTester(algorithm, close_prices, pt=1.01, sl=0.99, exp=5):
     return cash, value_history, trades, historical_positions
 
 
-def start_backtest():
+def start_backtest(ticker):
     # data = pd.read_csv('../data/forex_all.csv')
-    data = pd.read_csv('./data/UNH_test.csv')
+    data = pd.read_csv('./data/' + ticker + '_test.csv')
     algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
 
     names = ["Crossing MA", "Buy and Hold", "Machine Learning"]
@@ -111,7 +111,7 @@ def start_backtest():
     # names = ['algo 1', 'algo 2', 'algo 3']
     _, axs = plt.subplots(len(algorithms), 1, sharex=True)
     for i, algo in enumerate(algorithms):
-        result, history, trades, positions = backTester(algo, data['Close'].values, sl=0.97, pt=1.03, exp=3)
+        result, history, trades, positions = backTester(algo, data['Close'].values, sl=0.97, pt=1.03, exp=3, ticker=ticker)
         with open(names[i] + '.txt', 'w') as output:
             output.write(str(positions))
         roi = "{:.2f}%".format((result - STARTING_MONEY) / STARTING_MONEY * 100)
@@ -127,4 +127,7 @@ def start_backtest():
 
 
 if __name__ == "__main__":
-    start_backtest()
+    if len(sys.argv) > 1:
+        start_backtest(sys.argv[1])
+    else:
+        start_backtest('UNH')

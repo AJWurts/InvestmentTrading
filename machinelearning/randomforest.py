@@ -1,15 +1,21 @@
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from joblib import dump
+import sys
 
 
-def forestgenerator(bins=None):
+def forestgenerator(ticker=None, bins=None):
   if bins is not None:
     df = bins
+  elif ticker is not None:
+    df = pd.read_csv('./data/training_' + ticker + '.csv')
   else:
-    df = pd.read_csv('../data/training_UNH.csv')
+    exit("Need to give a valid Stock ticker")
   X = []
   for i in range(len(df)):
     c = df['data'][i]
@@ -41,7 +47,7 @@ def forestgenerator(bins=None):
 
   bc.fit(train_X, train_y)
 
-  dump(bc, './saved_classifiers/randomforest_unh.joblib')
+  dump(bc, './machinelearning/saved_classifiers/randomforest_' + ticker + '.joblib')
 
 
   # print(bc.score(test_X, test_y))
@@ -50,4 +56,5 @@ def forestgenerator(bins=None):
   return bc
 
 if __name__ == "__main__":
-  forestgenerator()
+  if len(sys.argv) > 1:
+    forestgenerator(sys.argv[1])

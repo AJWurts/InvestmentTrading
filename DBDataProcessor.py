@@ -5,7 +5,7 @@ from machinelearning.triplebars import applyTripleBarrierLabeling
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import sys
 
 def getDailyVol(close,span0=50):
     # daily vol reindexed to close
@@ -148,8 +148,9 @@ def processor(filename):
     dateparse3 = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     print("Loading CSV")
     data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dateparse3)
-    vol_price, thresh = calcHyperParams(data)
-    data = createTestData(data, filename)
+    vol_price, thresh = calcHyperParams(data, numDays=1, percentile=80)
+    print("THRESHOLD: ", thresh)
+    data = createTestData(data, filename, length=80)
    
     print("Creating Bars")
     bars, raw_bars = customBars(data, vol_price, lambda x: x['Volume'] * x['Close'], returnBars=True)  
@@ -159,8 +160,6 @@ def processor(filename):
 
     print("Heikin Ashi Bars")
     bars = Heikin_Ashi(raw_bars)
-    
-    
 
     print("Cumulative Summation Event Selector")
     events = cumsum(bars, thresh)
@@ -172,7 +171,7 @@ def processor(filename):
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
     
     out = applyTripleBarrierLabeling(data['Close'], events, [1,1])
-    print("Bins after triple barrier: ", out)
+    # print("Bins after triple barrier: ", out)
     out = out.sort_index()
     print("Bins")
     bins = getBins(out, data['Close'])
@@ -188,7 +187,6 @@ def processor(filename):
     bins = createTrainingData(bins, data, length=8, fd=True)    
     
     print("Saving")
-
     lastSlash = filename.rfind('/')
     period = filename.rfind('.')
     bins.to_csv('./data/training_' + filename[lastSlash + 1: period] + '.csv')
@@ -197,7 +195,10 @@ def processor(filename):
 
 if __name__ == "__main__":
     # altProcess('./data/UNH.csv')
-    processor("./data/UNH.csv")
+    if len(sys.argv) > 1:
+        processor('./data/' + sys.argv[1] + '.csv')
+    else:
+        processor("./data/UNH.csv")
 
 
 

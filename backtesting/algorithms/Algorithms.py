@@ -22,7 +22,7 @@ neg = 0
 def MA(n=10):
     return sum(previous_data[-n:]) / n
 
-def wurtsAlgorithm(p, cash, stockOwned):
+def wurtsAlgorithm(p, cash, stockOwned, ticker=None):
     previous_data.append(p)
 
     if len(previous_data) >= 10:
@@ -44,14 +44,14 @@ def wurtsAlgorithm(p, cash, stockOwned):
     return 'do_nothing', 0
 
 
-def alwaysBuy(p, cash, stockOwned):
+def alwaysBuy(p, cash, stockOwned, ticker=None):
     if (cash > p):
         return 'buy', 1000000
     else:
         return 'do_nothing', 0
 
 
-def keepAt50k(p, cash, stockOwned):
+def keepAt50k(p, cash, stockOwned, ticker=None):
     if cash > 50000:
         return 'buy', 100
     elif cash < 50000:
@@ -60,7 +60,7 @@ def keepAt50k(p, cash, stockOwned):
         return 'do_nothing', 0
     
 
-def randomBuySell(p, cash, stockOwned):
+def randomBuySell(p, cash, stockOwned, ticker=None):
     choice = randint(0, 2)
 
     if choice == 0:
@@ -71,14 +71,14 @@ def randomBuySell(p, cash, stockOwned):
         return 'do nothing', 0
 
 
-def mlalgo(p, cash, stockOwned):
+def mlalgo(p, cash, stockOwned, ticker):
     global pos, neg, mlalgoHasRun, clf, previous_data, weights, diff_data, flag
     previous_data.append(p)
 
     if not mlalgoHasRun:
         mlalgoHasRun = True
         weights = getWeights(0.75, threshold=0.01)
-        clf = load('./machinelearning/saved_classifiers/randomforest.joblib')
+        clf = load('./machinelearning/saved_classifiers/randomforest_' + ticker + '.joblib')
 
     if len(previous_data) > len(weights):
         val = np.dot(weights.T, previous_data[-len(weights):])
@@ -86,7 +86,7 @@ def mlalgo(p, cash, stockOwned):
             diff_data.append(val[0])
 
     flag = False
-    threshold = 0.03 # 0.01 works for minute data
+    threshold = 0.025 ## SET ME FROM THE VALUE YOU GOT IN DBDATAPROCESSOR called THRESHOLD
     if len(previous_data) > 1:
         pos = max(0, pos + ((p - previous_data[-2]) / previous_data[-2]))
         neg = min(0, neg + ((p - previous_data[-2]) / previous_data[-2]))
@@ -98,7 +98,7 @@ def mlalgo(p, cash, stockOwned):
             neg = 0
 
 
-    ml_input_size = 16
+    ml_input_size = 12
     if len(diff_data) >= ml_input_size and flag:
         result = clf.predict([diff_data[-ml_input_size:]])[0]
         print(result)
