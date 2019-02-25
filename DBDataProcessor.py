@@ -112,18 +112,47 @@ def createTrainingData(bins, data, length=120, fd=False):
     # bins = bins[mask]
     return bins
 
+def calcHyperParams(data, percentile=75, numDays=2, func=lambda x: x['Volume'] * x['Close']):
+    """
+    Calculates threshold for when cumulative summation activates and calculates the number required so that the bar creator roughly creates bars equal to 2 days each.
+    percentile: the percentile to select for the threshold
+    numDays: the approximate number of days to include in each bar based on the average of the volume * close
+    func: Should be the same function used in the custumBars method
+    """
+    # Goal: Calculate 75% percentile of daily price movemet assuming its normal
+    diff = (data['High'] - data['Low'])
+    thresh = np.percentile(diff, percentile)
 
+    # Calculate vol*price for data so that the bars last around 2 days.
+    vol_price_data = func(data)
+    # print(vol_price_data)
+    vol_price_avg = np.percentile(vol_price_data, 50) * numDays
+
+
+    return vol_price_avg, thresh / 100
     
+
+def createTestData(data, filename, length=45):
+    # Creates test data set and saves it under filename_test.csv
+    test = data.iloc[-length:]
+    lastSlash = filename.rfind('/')
+    period = filename.rfind('.')
+
+    test.to_csv('./data/' + filename[lastSlash + 1: period] + '_test.csv')
+
+    return data.iloc[:-length]
+
 def processor(filename):
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
     dparse2 = lambda x: pd.datetime.strptime(x, '%m/%d/%Y')
     dateparse3 = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     print("Loading CSV")
     data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dateparse3)
-    
+    vol_price, thresh = calcHyperParams(data)
+    data = createTestData(data, filename)
    
     print("Creating Bars")
-    bars, raw_bars = customBars(data, 6630779.968, lambda x: x['Volume'] * x['Close'], returnBars=True)  
+    bars, raw_bars = customBars(data, vol_price, lambda x: x['Volume'] * x['Close'], returnBars=True)  
     data = data.set_index('Date')
     # dollar bars 1e11 for days
     # dollar bar for minutes = 3.6e7
@@ -134,7 +163,7 @@ def processor(filename):
     
 
     print("Cumulative Summation Event Selector")
-    events = cumsum(bars, 0.0300)
+    events = cumsum(bars, thresh)
 
     print("Vertical Bars")
     t1 = addVerticalBarrier(events, data['Close'], numDays=3)
@@ -159,12 +188,16 @@ def processor(filename):
     bins = createTrainingData(bins, data, length=8, fd=True)    
     
     print("Saving")
-    bins.to_csv('./data/training_std.csv')
+
+    lastSlash = filename.rfind('/')
+    period = filename.rfind('.')
+    bins.to_csv('./data/training_' + filename[lastSlash + 1: period] + '.csv')
 
     return bins
 
 if __name__ == "__main__":
-    processor("./data/DE.csv")
+    # altProcess('./data/UNH.csv')
+    processor("./data/UNH.csv")
 
 
 
