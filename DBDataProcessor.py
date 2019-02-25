@@ -86,9 +86,9 @@ def createTrainingData(bins, data, length=120, fd=False):
     # Bins
     if fd:
         diff = fracDiff(data, d=0.75)
-        data = diff[['Close', 'High', 'Open', 'Low']]
+        data = data['Close']#diff[['Close', 'High', 'Open', 'Low']]
     else:
-        data = data[['Close', 'High', 'Open', 'Low']]
+        data = data['Close']#data[['Close', 'High', 'Open', 'Low']]
     start = data['Close'].index.searchsorted(bins['start'].values)
     finish = data['Close'].index.searchsorted(bins.index)
     arrays = []
@@ -125,8 +125,7 @@ def calcHyperParams(data, percentile=75, numDays=2, func=lambda x: x['Volume'] *
 
     # Calculate vol*price for data so that the bars last around 2 days.
     vol_price_data = func(data)
-    # print(vol_price_data)
-    vol_price_avg = np.percentile(vol_price_data, 50) * numDays
+    vol_price_avg = np.mean(vol_price_data) * numDays
 
 
     return vol_price_avg, thresh / 100
@@ -148,7 +147,7 @@ def processor(filename):
     dateparse3 = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     print("Loading CSV")
     data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dateparse3)
-    vol_price, thresh = calcHyperParams(data, numDays=1, percentile=80)
+    vol_price, thresh = calcHyperParams(data, numDays=1, percentile=90)
     print("THRESHOLD: ", thresh)
     data = createTestData(data, filename, length=80)
    
@@ -170,7 +169,7 @@ def processor(filename):
     side_ = pd.Series(1.,index=t1.index)
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
     
-    out = applyTripleBarrierLabeling(data['Close'], events, [1,1])
+    out = applyTripleBarrierLabeling(data['Close'], events, [3,3])
     # print("Bins after triple barrier: ", out)
     out = out.sort_index()
     print("Bins")

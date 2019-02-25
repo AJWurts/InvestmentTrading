@@ -57,4 +57,5 @@ def forestgenerator(ticker=None, bins=None):
 
 if __name__ == "__main__":
   if len(sys.argv) > 1:
+    print("Training Random Forest")
     forestgenerator(sys.argv[1])
