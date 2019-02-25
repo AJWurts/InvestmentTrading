@@ -9,5 +9,5 @@ class Position:
         self.exp = exp
     
     def setSellTime(sell_time):
-        self.sell_time = sell_time):
+        self.sell_time = sell_time
     

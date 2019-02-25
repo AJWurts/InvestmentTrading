@@ -176,15 +176,15 @@ def volumeBars(data, threshold, returnBars=False):
     return df.set_index('Date')
 
 
-def plotBars(time, bars, ax, color='g'):
-    index = [i for i in range(len(bars))]
-    _open = [bar.open for bar in bars]
-    _close = [bar.close for bar in bars]
-    _high = [bar.high for bar in bars]
-    _low = [bar.low for bar in bars]
+# def plotBars(time, bars, ax, color='g'):
+#     index = [i for i in range(len(bars))]
+#     _open = [bar.open for bar in bars]
+#     _close = [bar.close for bar in bars]
+#     _high = [bar.high for bar in bars]
+#     _low = [bar.low for bar in bars]
 
-    candlestick_ohlc(ax, zip(index, _open, _high, _low,
-                             _close), colorup='g', width=0.6)
+#     candlestick_ohlc(ax, zip(index, _open, _high, _low,
+#                              _close), colorup='g', width=0.6)
 
 
 def main():
