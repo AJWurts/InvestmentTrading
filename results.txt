@@ -32,3 +32,8 @@ Start writing
 
 
 Working backtest shown
+
+
+
+Show consistency
+certain parameters
