@@ -100,7 +100,7 @@ def backTester(algorithm, close_prices, pt=1.01, sl=0.99, exp=5):
 
 def start_backtest():
     # data = pd.read_csv('../data/forex_all.csv')
-    data = pd.read_csv('./data/DE_test1.csv')
+    data = pd.read_csv('./data/UNH_test.csv')
     algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
 
     names = ["Crossing MA", "Buy and Hold", "Machine Learning"]

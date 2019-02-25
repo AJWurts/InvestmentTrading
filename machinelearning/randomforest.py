@@ -9,7 +9,7 @@ def forestgenerator(bins=None):
   if bins is not None:
     df = bins
   else:
-    df = pd.read_csv('../data/training_std.csv')
+    df = pd.read_csv('../data/training_UNH.csv')
   X = []
   for i in range(len(df)):
     c = df['data'][i]
@@ -27,7 +27,7 @@ def forestgenerator(bins=None):
   X = [x[:min_length] for x in X]
 
 
-  split = 0.9
+  testing_size = 60
   train_X = X
   train_y = df['bin'].values
 
@@ -41,7 +41,7 @@ def forestgenerator(bins=None):
 
   bc.fit(train_X, train_y)
 
-  dump(bc, './saved_classifiers/randomforest.joblib')
+  dump(bc, './saved_classifiers/randomforest_unh.joblib')
 
 
   # print(bc.score(test_X, test_y))
