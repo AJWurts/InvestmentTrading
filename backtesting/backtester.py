@@ -111,7 +111,7 @@ def start_backtest(ticker):
     # names = ['algo 1', 'algo 2', 'algo 3']
     _, axs = plt.subplots(len(algorithms), 1, sharex=True)
     for i, algo in enumerate(algorithms):
-        result, history, trades, positions = backTester(algo, data['Close'].values, sl=0.97, pt=1.03, exp=3, ticker=ticker)
+        result, history, trades, positions = backTester(algo, data['Close'].values, sl=0.97, pt=1.03, exp=10, ticker=ticker)
         with open(names[i] + '.txt', 'w') as output:
             output.write(str(positions))
         roi = "{:.2f}%".format((result - STARTING_MONEY) / STARTING_MONEY * 100)

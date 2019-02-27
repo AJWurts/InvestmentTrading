@@ -86,7 +86,7 @@ def createTrainingData(bins, data, length=120, fd=False):
     # Bins
     if fd:
         diff = fracDiff(data, d=0.75)
-        data = data['Close']#diff[['Close', 'High', 'Open', 'Low']]
+        data = diff[['Close', 'High', 'Open', 'Low']]
     else:
         data = data['Close']#data[['Close', 'High', 'Open', 'Low']]
     start = data['Close'].index.searchsorted(bins['start'].values)

@@ -86,7 +86,7 @@ def mlalgo(p, cash, stockOwned, ticker):
             diff_data.append(val[0])
 
     flag = False
-    threshold = 0.039 ## SET ME FROM THE VALUE YOU GOT IN DBDATAPROCESSOR called THRESHOLD
+    threshold = 0.01 ## SET ME FROM THE VALUE YOU GOT IN DBDATAPROCESSOR called THRESHOLD
     if len(previous_data) > 1:
         pos = max(0, pos + ((p - previous_data[-2]) / previous_data[-2]))
         neg = min(0, neg + ((p - previous_data[-2]) / previous_data[-2]))
@@ -98,12 +98,12 @@ def mlalgo(p, cash, stockOwned, ticker):
             neg = 0
 
 
-    ml_input_size = 12
+    ml_input_size = 20
     if len(diff_data) >= ml_input_size and flag:
         result = clf.predict([diff_data[-ml_input_size:]])[0]
         print(result)
-        if result == 1 and cash > p:
-            return 'buy', 200
+        if result == -1 and cash > p:
+            return 'buy', 50
         # else:
         #     return 'sell', 500
         flag = False
