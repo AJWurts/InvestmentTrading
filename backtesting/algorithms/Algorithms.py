@@ -97,7 +97,6 @@ def mlalgo(p, cash, stockOwned, ticker):
             flag = True
             neg = 0
 
-
     ml_input_size = 20
     if len(diff_data) >= ml_input_size and flag:
         result = clf.predict([diff_data[-ml_input_size:]])[0]
@@ -107,10 +106,7 @@ def mlalgo(p, cash, stockOwned, ticker):
         # else:
         #     return 'sell', 500
         flag = False
-        
-
     return 'Do Nothing', 10
-
 
 def reset():
     global previous_data, ma_10, ma_20

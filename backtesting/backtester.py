@@ -23,7 +23,6 @@ class Trade:
         self.qtn = qtn
         self.type = t_type
 
-
 class Trades:
     def __init__(self):
         self.numberOfTrades = 0
@@ -65,31 +64,39 @@ class Trades:
         return str(self.tradeLog)
 
 
-def backTester(algorithm, close_prices, pt=1.01, sl=0.99, exp=5, ticker='UNH'):
+def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": None, 'freq': 1}, ticker='UNH'):
     value_history = []
     cash = STARTING_MONEY
     stock_owned = 0
     trades = Trades()
     historical_positions = []
     positions = []
+
+    if config['exp'] is None:
+        config['exp'] = 10000 # Should never happen
     for i, p in tqdm(enumerate(close_prices), total=len(close_prices)):
+        if i % config['freq'] != 0:
+            value_history.append(cash + stock_owned * p)
+
+            continue # Not allowed to trade this day
         choice, amt = algorithm(p, cash, stock_owned, ticker=ticker)
+
         keepPositions = []
         for pos in positions:
-            if pos.sl >= p or pos.pt <= p or pos.exp <= i or i == len(close_prices) - 1:
+            if  pos.pt <= p or pos.exp <= i or i == len(close_prices) - 1 or pos.maxVal * pos.tsl > p:
                 pos.setSellTime(i, p)
                 historical_positions.append(pos)
                 cash += (pos.qtn * p - COMMISSION)
                 trades.addTrade(Trade(i, pos.qtn * p, 'sell'))
                 stock_owned -= pos.qtn
             else:
-                keepPositions.append(pos)
+                keepPositions.append(pos.newVal(p))
 
         positions = keepPositions[:]
         if choice == 'buy':
             if cash < amt * p:
                 amt = int(cash / p)
-            positions.append(Position(i, amt, p * sl, p * pt, i + exp, p))
+            positions.append(Position(i, amt, tsl=p * config['tsl'], pt=p * config['pt'], exp=i + config['exp'], buy_price=p))
             trades.addTrade(Trade(i, amt, 'buy'))
             stock_owned += amt
             cash -= (amt * p + COMMISSION)
@@ -101,25 +108,45 @@ def backTester(algorithm, close_prices, pt=1.01, sl=0.99, exp=5, ticker='UNH'):
     return cash, value_history, trades, historical_positions
 
 
-def start_backtest(ticker):
+def start_backtest(ticker, time='short'):
     # data = pd.read_csv('../data/forex_all.csv')
     data = pd.read_csv('./data/' + ticker + '_test.csv')
     algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
+    
+    configs = {
+        "long": {"tsl": 0.95, "pt": 1.1, "exp": None, "freq": 5},
+        "medium": {"tsl": 0.97, "pt": 1.05, "exp": 8, "freq": 2},
+        "short": {"tsl": 0.99, "pt": 1.03, "exp": 3, "freq": 1},
+    }
 
+    config = configs[time]
     names = ["Crossing MA", "Buy and Hold", "Machine Learning"]
     # algorithms = [n_algorithm1, n_algorithm2, n_algorithm3]
     # names = ['algo 1', 'algo 2', 'algo 3']
     _, axs = plt.subplots(len(algorithms), 1, sharex=True)
     for i, algo in enumerate(algorithms):
-        result, history, trades, positions = backTester(algo, data['Close'].values, sl=0.97, pt=1.03, exp=10, ticker=ticker)
+ 
+        # Run Backtester
+        result, history, trades, positions = backTester(algo, data['Close'].values, config=config, ticker=ticker)
+
+        # Save position history to file
         with open(names[i] + '.txt', 'w') as output:
             output.write(str(positions))
+        ## Calculate ROI and turn it into a string
         roi = "{:.2f}%".format((result - STARTING_MONEY) / STARTING_MONEY * 100)
+
+        # Set the title of the graph subsection
         axs[i].set_title(names[i] + 'return: ' + roi + ' trades: ' + str(len(trades)))
+
+        ## Plot the algorithms asset history
         axs[i].plot([i for i in range(len(history))], history,  color='blue', linewidth=2)
+        ## Plot the Sell Trades in red
         axs[i].scatter(trades.getTradeX('sell'), [history[t.time] for t in trades.tradeLog if t.type == 'sell'], color='red', alpha=0.5)
+
+        ## Plot the Buy Trades in green
         axs[i].scatter(trades.getTradeX('buy'), [history[t.time] - 10 for t in trades.tradeLog if t.type == 'buy'] , color='green', alpha=0.5)
         reset()
+        # Print the results to terminal
         print(names[i] + " Result: $" + str(result))
         print("ROI: {:.2f}%".format(
             (result - STARTING_MONEY) / STARTING_MONEY * 100))
