@@ -5,11 +5,7 @@ from os import path
 import os
 ticker = sys.argv[1]
 
-# fileName = './data/' + ticker + '.csv'
 
-# bins = processor(fileName)
-# forestgenerator(ticker)
-# start_backtest(ticker)
 
 for ticker in sys.argv[1:]:
     os.system('python3 DBDataProcessor.py ' + ticker)

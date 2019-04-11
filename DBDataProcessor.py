@@ -147,7 +147,7 @@ def processor(filename):
     dateparse3 = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     print("Loading CSV")
     data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dateparse3)
-    vol_price, thresh = calcHyperParams(data, numDays=1, percentile=90)
+    vol_price, thresh = calcHyperParams(data, numDays=1, percentile=80)
     print("THRESHOLD: ", thresh)
    
     data = createTestData(data, filename, length=80)

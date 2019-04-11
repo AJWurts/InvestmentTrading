@@ -11,6 +11,7 @@ flag = False
 previous_data = []
 diff_data = []
 threshold = 0.1
+input_size = 0
 
 ma_10 = []
 ma_20 = []
@@ -73,14 +74,15 @@ def randomBuySell(p, cash, stockOwned, ticker=None):
 
 
 def mlalgo(p, cash, stockOwned, ticker):
-    global pos, neg, mlalgoHasRun, clf, previous_data, weights, diff_data, flag, threshold
+    global pos, neg, mlalgoHasRun, clf, previous_data, weights, diff_data, flag, threshold, input_size
     previous_data.append(p)
     if not mlalgoHasRun:
         mlalgoHasRun = True
         weights = getWeights(0.75, threshold=0.01)
         with open(ticker + 'thresh.txt', 'r') as threshFile:
             threshold = float(threshFile.read())
-            print(threshold)
+        with open(ticker + 'mlsize.txt', 'r') as mlsizefile:
+            input_size = int(mlsizefile.read())
         clf = load('./machinelearning/saved_classifiers/randomforest_' + ticker + '.joblib')
 
     if len(previous_data) > len(weights):
@@ -90,7 +92,6 @@ def mlalgo(p, cash, stockOwned, ticker):
 
     flag = False
     # threshold = 0.0395 ## SET ME FROM THE VALUE YOU GOT IN DBDATAPROCESSOR called THRESHOLD
-    print(threshold)
     if len(previous_data) > 1:
         pos = max(0, pos + ((p - previous_data[-2]) / previous_data[-2]))
         neg = min(0, neg + ((p - previous_data[-2]) / previous_data[-2]))
@@ -101,12 +102,12 @@ def mlalgo(p, cash, stockOwned, ticker):
             flag = True
             neg = 0
 
-    ml_input_size = 20
-    if len(diff_data) >= ml_input_size and flag:
-        result = clf.predict([diff_data[-ml_input_size:]])[0]
+    # ml_input_size = 16
+    if len(diff_data) >= input_size and flag:
+        result = clf.predict([diff_data[-input_size:]])[0]
         print(result)
         if result == -1 and cash > p:
-            return 'buy', int(1000 / p) 
+            return 'buy', int(10000 / p) 
         # else:
         #     return 'sell', 500
         flag = False

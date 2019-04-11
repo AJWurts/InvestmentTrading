@@ -12,9 +12,8 @@ import pandas as pd
 import numpy as np
 
 
-STARTING_MONEY = 100000  # $100,000
+STARTING_MONEY = 25000  # $100,000
 COMMISSION = 5  # $5 commission
-STOCK = 'SPY'
 
 
 class Trade:
@@ -75,14 +74,15 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
     if config['exp'] is None:
         config['exp'] = 10000 # Should never happen
     for i, p in tqdm(enumerate(close_prices), total=len(close_prices)):
+
+        choice, amt = algorithm(p, cash, stock_owned, ticker=ticker)
         if i % config['freq'] != 0:
             value_history.append(cash + stock_owned * p)
 
             continue # Not allowed to trade this day
-        choice, amt = algorithm(p, cash, stock_owned, ticker=ticker)
-
         keepPositions = []
         for pos in positions:
+            print(pos.maxVal, pos.maxVal * pos.tsl)
             if  pos.pt <= p or pos.exp <= i or i == len(close_prices) - 1 or pos.maxVal * pos.tsl > p:
                 pos.setSellTime(i, p)
                 historical_positions.append(pos)
@@ -96,7 +96,7 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
         if choice == 'buy':
             if cash < amt * p:
                 amt = int(cash / p)
-            positions.append(Position(i, amt, tsl=p * config['tsl'], pt=p * config['pt'], exp=i + config['exp'], buy_price=p))
+            positions.append(Position(i, amt, tsl=config['tsl'], pt=p * config['pt'], exp=i + config['exp'], buy_price=p))
             trades.addTrade(Trade(i, amt, 'buy'))
             stock_owned += amt
             cash -= (amt * p + COMMISSION)
@@ -108,10 +108,9 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
     return cash, value_history, trades, historical_positions
 
 
-def start_backtest(tickers, time='short', algo=mlalgo):
+def start_backtest(tickers, time='medium', algo=mlalgo):
     # data = pd.read_csv('../data/forex_all.csv')
     data_set = [pd.read_csv('./data/' + ticker + '_test.csv') for ticker in tickers]
-    # algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
     
     configs = {
         "long": {"tsl": 0.95, "pt": 1.1, "exp": None, "freq": 5},

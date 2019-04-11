@@ -29,6 +29,8 @@ def forestgenerator(ticker=None, bins=None):
     X.append(result)
 
   min_length = min([len(d) for d in X])
+  with open(ticker + "mlsize.txt", 'w') as output:
+    output.write(str(min_length))
   X = [x[:min_length] for x in X]
 
   train_X = X
@@ -36,7 +38,7 @@ def forestgenerator(ticker=None, bins=None):
 
 
 
-  forest = RandomForestClassifier(n_estimators=1000, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
+  forest = RandomForestClassifier(n_estimators=2000, criterion='entropy', class_weight='balanced_subsample', max_features='auto')
 
   bc = BaggingClassifier(base_estimator=forest, n_estimators=4)
 
