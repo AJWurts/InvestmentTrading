@@ -29,7 +29,7 @@ def forestgenerator(ticker=None, bins=None):
     X.append(result)
 
   min_length = min([len(d) for d in X])
-  with open(ticker + "mlsize.txt", 'w') as output:
+  with open('./mlsize/' + ticker + "mlsize.txt", 'w') as output:
     output.write(str(min_length))
   X = [x[:min_length] for x in X]
 

@@ -77,11 +77,18 @@ def mlalgo(p, cash, stockOwned, ticker):
     global pos, neg, mlalgoHasRun, clf, previous_data, weights, diff_data, flag, threshold, input_size
     previous_data.append(p)
     if not mlalgoHasRun:
+        clf = None
+        weights = None
+        flag = False
+        previous_data = []
+        diff_data = []
+        threshold = 0.1
+        input_size = 0
         mlalgoHasRun = True
         weights = getWeights(0.75, threshold=0.01)
-        with open(ticker + 'thresh.txt', 'r') as threshFile:
+        with open("./thresholds/" + ticker + "thresh.txt", 'r') as threshFile:
             threshold = float(threshFile.read())
-        with open(ticker + 'mlsize.txt', 'r') as mlsizefile:
+        with open('./mlsize/' + ticker + 'mlsize.txt', 'r') as mlsizefile:
             input_size = int(mlsizefile.read())
         clf = load('./machinelearning/saved_classifiers/randomforest_' + ticker + '.joblib')
 

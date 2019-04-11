@@ -200,7 +200,7 @@ if __name__ == "__main__":
     else:
         bins, thresh = processor("./data/UNH.csv")
 
-    with open(sys.argv[1] + "thresh.txt", 'w') as output:
+    with open("./thresholds/" + sys.argv[1] + "thresh.txt", 'w') as output:
         output.write(str(thresh))
 
 

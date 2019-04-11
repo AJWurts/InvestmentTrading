@@ -133,7 +133,7 @@ def start_backtest(tickers, time='medium', algo=mlalgo):
         result, history, trades, positions = backTester(algo, data['Close'].values, config=config, ticker=tickers[i])
 
         # Save position history to file
-        with open(tickers[i] + '.txt', 'w') as output:
+        with open('./tradehistory/' + tickers[i] + time + '.txt', 'w') as output:
             output.write(str(positions))
         ## Calculate ROI and turn it into a string
         roi = "{:.2f}%".format((result - STARTING_MONEY) / STARTING_MONEY * 100)
