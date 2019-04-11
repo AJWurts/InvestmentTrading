@@ -149,6 +149,7 @@ def processor(filename):
     data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dateparse3)
     vol_price, thresh = calcHyperParams(data, numDays=1, percentile=90)
     print("THRESHOLD: ", thresh)
+   
     data = createTestData(data, filename, length=80)
    
     print("Creating Bars")
@@ -190,15 +191,17 @@ def processor(filename):
     period = filename.rfind('.')
     bins.to_csv('./data/training_' + filename[lastSlash + 1: period] + '.csv')
 
-    return bins
+    return bins, thresh
 
 if __name__ == "__main__":
     # altProcess('./data/UNH.csv')
     if len(sys.argv) > 1:
-        processor('./data/' + sys.argv[1] + '.csv')
+        bins, thresh = processor('./data/' + sys.argv[1] + '.csv')
     else:
-        processor("./data/UNH.csv")
+        bins, thresh = processor("./data/UNH.csv")
 
+    with open(sys.argv[1] + "thresh.txt", 'w') as output:
+        output.write(str(thresh))
 
 
 

@@ -108,35 +108,39 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
     return cash, value_history, trades, historical_positions
 
 
-def start_backtest(ticker, time='short'):
+def start_backtest(tickers, time='short', algo=mlalgo):
     # data = pd.read_csv('../data/forex_all.csv')
-    data = pd.read_csv('./data/' + ticker + '_test.csv')
-    algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
+    data_set = [pd.read_csv('./data/' + ticker + '_test.csv') for ticker in tickers]
+    # algorithms = [wurtsAlgorithm, alwaysBuy,  mlalgo]
     
     configs = {
         "long": {"tsl": 0.95, "pt": 1.1, "exp": None, "freq": 5},
         "medium": {"tsl": 0.97, "pt": 1.05, "exp": 8, "freq": 2},
-        "short": {"tsl": 0.99, "pt": 1.03, "exp": 3, "freq": 1},
+        "short": {"tsl": 0.97, "pt": 1.03, "exp": 3, "freq": 1},
     }
 
     config = configs[time]
-    names = ["Crossing MA", "Buy and Hold", "Machine Learning"]
+    # names = ["Crossing MA", "Buy and Hold", "Machine Learning"]
     # algorithms = [n_algorithm1, n_algorithm2, n_algorithm3]
     # names = ['algo 1', 'algo 2', 'algo 3']
-    _, axs = plt.subplots(len(algorithms), 1, sharex=True)
-    for i, algo in enumerate(algorithms):
+    if (len(tickers) == 1):
+        _, axs = plt.subplots(len(tickers), 1, sharex=True)
+        axs = [axs]
+    else:
+        _, axs = plt.subplots(len(tickers), 1, sharex=True)
+    for i, data in enumerate(data_set):
  
         # Run Backtester
-        result, history, trades, positions = backTester(algo, data['Close'].values, config=config, ticker=ticker)
+        result, history, trades, positions = backTester(algo, data['Close'].values, config=config, ticker=tickers[i])
 
         # Save position history to file
-        with open(names[i] + '.txt', 'w') as output:
+        with open(tickers[i] + '.txt', 'w') as output:
             output.write(str(positions))
         ## Calculate ROI and turn it into a string
         roi = "{:.2f}%".format((result - STARTING_MONEY) / STARTING_MONEY * 100)
 
         # Set the title of the graph subsection
-        axs[i].set_title(names[i] + 'return: ' + roi + ' trades: ' + str(len(trades)))
+        axs[i].set_title(tickers[i] + ' return: ' + roi + ' trades: ' + str(len(trades)))
 
         ## Plot the algorithms asset history
         axs[i].plot([i for i in range(len(history))], history,  color='blue', linewidth=2)
@@ -144,10 +148,10 @@ def start_backtest(ticker, time='short'):
         axs[i].scatter(trades.getTradeX('sell'), [history[t.time] for t in trades.tradeLog if t.type == 'sell'], color='red', alpha=0.5)
 
         ## Plot the Buy Trades in green
-        axs[i].scatter(trades.getTradeX('buy'), [history[t.time] - 10 for t in trades.tradeLog if t.type == 'buy'] , color='green', alpha=0.5)
+        axs[i].scatter(trades.getTradeX('buy'), [history[t.time] for t in trades.tradeLog if t.type == 'buy'] , color='green', alpha=0.5)
         reset()
         # Print the results to terminal
-        print(names[i] + " Result: $" + str(result))
+        print(tickers[i] + " Result: $" + str(result))
         print("ROI: {:.2f}%".format(
             (result - STARTING_MONEY) / STARTING_MONEY * 100))
     plt.show()
@@ -155,6 +159,6 @@ def start_backtest(ticker, time='short'):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        start_backtest(sys.argv[1])
+        start_backtest(sys.argv[1:])
     else:
-        start_backtest('UNH')
+        start_backtest(['UNH'])

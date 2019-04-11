@@ -11,9 +11,10 @@ ticker = sys.argv[1]
 # forestgenerator(ticker)
 # start_backtest(ticker)
 
-os.system('python3 DBDataProcessor.py ' + ticker)
-os.system('python3 machinelearning/randomforest.py ' + ticker)
-os.system('python3 backtesting/backtester.py ' + ticker)
+for ticker in sys.argv[1:]:
+    os.system('python3 DBDataProcessor.py ' + ticker)
+    os.system('python3 machinelearning/randomforest.py ' + ticker)
+    # os.system('python3 backtesting/backtester.py ' + ticker)
 
 
 
