@@ -17,8 +17,11 @@ def forestgenerator(ticker=None, bins=None):
   else:
     exit("Need to give a valid Stock ticker")
   X = []
+  y = []
   for i in range(len(df)):
     c = df['data'][i]
+    if type(c) == float:
+      continue
     for char in '[]\n\r':
       c = c.replace(char, '')
     
@@ -27,6 +30,7 @@ def forestgenerator(ticker=None, bins=None):
     result = list(map(lambda x: float(x), result))
 
     X.append(result)
+    y.append(df['bin'][i])
 
   min_length = min([len(d) for d in X])
   with open('./mlsize/' + ticker + "mlsize.txt", 'w') as output:
@@ -34,7 +38,7 @@ def forestgenerator(ticker=None, bins=None):
   X = [x[:min_length] for x in X]
 
   train_X = X
-  train_y = df['bin'].values
+  train_y = y
 
 
 

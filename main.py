@@ -6,11 +6,14 @@ import os
 ticker = sys.argv[1]
 
 
-
+ticker_string = ""
 for ticker in sys.argv[1:]:
+    ticker_string += ticker + " "
     os.system('python3 DBDataProcessor.py ' + ticker)
     os.system('python3 machinelearning/randomforest.py ' + ticker)
-    # os.system('python3 backtesting/backtester.py ' + ticker)
+
+
+os.system('python3 backtesting/backtester.py ' + ticker_string)
 
 
 
