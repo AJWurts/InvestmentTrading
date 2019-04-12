@@ -128,7 +128,7 @@ def calcHyperParams(data, percentile=75, numDays=2, func=lambda x: x['Volume'] *
     vol_price_avg = np.mean(vol_price_data) * numDays
 
 
-    return vol_price_avg, thresh / 100
+    return vol_price_avg, thresh / 10
     
 
 def createTestData(data, filename, length=45):

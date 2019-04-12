@@ -2,14 +2,15 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from backtesting.trade import Position
-from tqdm import tqdm
-from machinelearning.fracdiff import fracDiff, getWeights
-from backtesting.algorithms.Nicholas_Algorithms import n_algorithm1, n_algorithm2, n_algorithm3
-from backtesting.algorithms.Algorithms import wurtsAlgorithm, alwaysBuy, randomBuySell, keepAt50k, mlalgo, reset
-import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from algorithms.Algorithms import wurtsAlgorithm, alwaysBuy, randomBuySell, keepAt50k, mlalgo, reset
+from algorithms.Nicholas_Algorithms import n_algorithm1, n_algorithm2, n_algorithm3
+from machinelearning.fracdiff import fracDiff, getWeights
+from tqdm import tqdm
+from trade import Position
+
 
 
 STARTING_MONEY = 25000  # $100,000
@@ -21,6 +22,7 @@ class Trade:
         self.time = time
         self.qtn = qtn
         self.type = t_type
+
 
 class Trades:
     def __init__(self):
@@ -72,18 +74,16 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
     positions = []
 
     if config['exp'] is None:
-        config['exp'] = 10000 # Should never happen
+        config['exp'] = 10000  # Should never happen
     for i, p in tqdm(enumerate(close_prices), total=len(close_prices)):
 
         choice, amt = algorithm(p, cash, stock_owned, ticker=ticker)
-        if i % config['freq'] != 0:
-            value_history.append(cash + stock_owned * p)
 
-            continue # Not allowed to trade this day
         keepPositions = []
+
         for pos in positions:
-            print(pos.maxVal, pos.maxVal * pos.tsl)
-            if  pos.pt <= p or pos.exp <= i or i == len(close_prices) - 1 or pos.maxVal * pos.tsl > p:
+            # Sell Position if any of the cell criteria are met.
+            if pos.pt <= p or pos.exp <= i or i == len(close_prices) - 1 or pos.maxVal * pos.tsl > p:
                 pos.setSellTime(i, p)
                 historical_positions.append(pos)
                 cash += (pos.qtn * p - COMMISSION)
@@ -92,11 +92,20 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
             else:
                 keepPositions.append(pos.newVal(p))
 
-        positions = keepPositions[:]
+        positions = keepPositions[:]        
+
+        ## Will only initialize trades when on the chosen frequency day
+        if i % config['freq'] != 0:
+            value_history.append(cash + stock_owned * p)
+
+            continue  # Not allowed to trade this day
+
+        
         if choice == 'buy':
             if cash < amt * p:
                 amt = int(cash / p)
-            positions.append(Position(i, amt, tsl=config['tsl'], pt=p * config['pt'], exp=i + config['exp'], buy_price=p))
+            positions.append(Position(
+                i, amt, tsl=config['tsl'], pt=p * config['pt'], exp=i + config['exp'], buy_price=p))
             trades.addTrade(Trade(i, amt, 'buy'))
             stock_owned += amt
             cash -= (amt * p + COMMISSION)
@@ -108,12 +117,13 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
     return cash, value_history, trades, historical_positions
 
 
-def start_backtest(tickers, time='long', algo=mlalgo):
+def start_backtest(tickers, time='medium', algo=mlalgo):
     # data = pd.read_csv('../data/forex_all.csv')
-    data_set = [pd.read_csv('./data/' + ticker + '_test.csv') for ticker in tickers]
-    
+    data_set = [pd.read_csv('./data/' + ticker + '_test.csv')
+                for ticker in tickers]
+
     configs = {
-        "long": {"tsl": 0.95, "pt": 1.1, "exp": None, "freq": 5},
+        "long": {"tsl": 0.95, "pt": 1.2, "exp": None, "freq": 5},
         "medium": {"tsl": 0.97, "pt": 1.05, "exp": 8, "freq": 2},
         "short": {"tsl": 0.97, "pt": 1.03, "exp": 3, "freq": 1},
     }
@@ -128,26 +138,32 @@ def start_backtest(tickers, time='long', algo=mlalgo):
     else:
         _, axs = plt.subplots(len(tickers), 1, sharex=True)
     for i, data in enumerate(data_set):
- 
+
         # Run Backtester
-        result, history, trades, positions = backTester(algo, data['Close'].values, config=config, ticker=tickers[i])
+        result, history, trades, positions = backTester(
+            algo, data['Close'].values, config=config, ticker=tickers[i])
 
         # Save position history to file
         with open('./tradehistory/' + tickers[i] + time + '.txt', 'w') as output:
             output.write(str(positions))
-        ## Calculate ROI and turn it into a string
-        roi = "{:.2f}%".format((result - STARTING_MONEY) / STARTING_MONEY * 100)
+        # Calculate ROI and turn it into a string
+        roi = "{:.2f}%".format(
+            (result - STARTING_MONEY) / STARTING_MONEY * 100)
 
         # Set the title of the graph subsection
-        axs[i].set_title(tickers[i] + ' return: ' + roi + ' trades: ' + str(len(trades)))
+        axs[i].set_title(tickers[i] + ' return: ' + roi +
+                         ' trades: ' + str(len(trades)))
 
-        ## Plot the algorithms asset history
-        axs[i].plot([i for i in range(len(history))], history,  color='blue', linewidth=2)
-        ## Plot the Sell Trades in red
-        axs[i].scatter(trades.getTradeX('sell'), [history[t.time] for t in trades.tradeLog if t.type == 'sell'], color='red', alpha=0.5)
+        # Plot the algorithms asset history
+        axs[i].plot([i for i in range(len(history))],
+                    history,  color='blue', linewidth=2)
+        # Plot the Sell Trades in red
+        axs[i].scatter(trades.getTradeX('sell'), [history[t.time]
+                                                  for t in trades.tradeLog if t.type == 'sell'], color='red', alpha=0.5)
 
-        ## Plot the Buy Trades in green
-        axs[i].scatter(trades.getTradeX('buy'), [history[t.time] for t in trades.tradeLog if t.type == 'buy'] , color='green', alpha=0.5)
+        # Plot the Buy Trades in green
+        axs[i].scatter(trades.getTradeX('buy'), [history[t.time]
+                       for t in trades.tradeLog if t.type == 'buy'], color='green', alpha=0.5)
         reset()
         # Print the results to terminal
         print(tickers[i] + " Result: $" + str(result))
