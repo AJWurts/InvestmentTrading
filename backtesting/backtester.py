@@ -77,7 +77,7 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
         config['exp'] = 10000  # Should never happen
     for i, p in tqdm(enumerate(close_prices), total=len(close_prices)):
 
-        choice, amt = algorithm(p, cash, stock_owned, ticker=ticker)
+        choice, amt = algorithm(p, cash, stock_owned, ticker=ticker, last=i >= len(close_prices) - 1)
 
         keepPositions = []
 
@@ -126,6 +126,7 @@ def start_backtest(tickers, time='medium', algo=mlalgo):
         "long": {"tsl": 0.95, "pt": 1.2, "exp": None, "freq": 5},
         "medium": {"tsl": 0.97, "pt": 1.05, "exp": 8, "freq": 2},
         "short": {"tsl": 0.97, "pt": 1.03, "exp": 3, "freq": 1},
+        "normal": {"tsl": 0.97, "pt": 1.03, "exp": 5, "freq": 1}
     }
 
     config = configs[time]
@@ -152,11 +153,13 @@ def start_backtest(tickers, time='medium', algo=mlalgo):
 
         # Set the title of the graph subsection
         axs[i].set_title(tickers[i] + ' return: ' + roi +
-                         ' trades: ' + str(len(trades)))
+                         ' trades: ' + str(len(trades)) + " Max Value: " + str(min(history)))
 
         # Plot the algorithms asset history
         axs[i].plot([i for i in range(len(history))],
                     history,  color='blue', linewidth=2)
+        
+        axs[i].plot([i for i in range(len(history))], data['Close'].values * (STARTING_MONEY / data['Close'].values[0]), color='orange', linewidth=2)
         # Plot the Sell Trades in red
         axs[i].scatter(trades.getTradeX('sell'), [history[t.time]
                                                   for t in trades.tradeLog if t.type == 'sell'], color='red', alpha=0.5)

@@ -73,7 +73,7 @@ def randomBuySell(p, cash, stockOwned, ticker=None):
         return 'do nothing', 0
 
 
-def mlalgo(p, cash, stockOwned, ticker):
+def mlalgo(p, cash, stockOwned, ticker, last=False):
     global pos, neg, mlalgoHasRun, clf, previous_data, weights, diff_data, flag, threshold, input_size
     previous_data.append(p)
     if not mlalgoHasRun:
@@ -85,12 +85,16 @@ def mlalgo(p, cash, stockOwned, ticker):
         threshold = 0.1
         input_size = 0
         mlalgoHasRun = True
+        print("New Classifier Opened")
         weights = getWeights(0.75, threshold=0.01)
         with open("./thresholds/" + ticker + "thresh.txt", 'r') as threshFile:
-            threshold = float(threshFile.read())
+            threshold = 0.01#float(threshFile.read()) / 2
         with open('./mlsize/' + ticker + 'mlsize.txt', 'r') as mlsizefile:
             input_size = int(mlsizefile.read())
         clf = load('./machinelearning/saved_classifiers/randomforest_' + ticker + '.joblib')
+
+    
+
 
     if len(previous_data) > len(weights):
         val = np.dot(weights.T, previous_data[-len(weights):])
@@ -109,15 +113,28 @@ def mlalgo(p, cash, stockOwned, ticker):
             flag = True
             neg = 0
 
+    
     # ml_input_size = 16
     if len(diff_data) >= input_size and flag:
         result = clf.predict([diff_data[-input_size:]])[0]
         print(result)
-        if result == -1 and cash > p:
-            return 'buy', int(10000 / p) 
+        if result == 1 and cash > p:
+            return 'buy', 1000
         # else:
         #     return 'sell', 500
         flag = False
+
+
+    if last:
+        print("Last Resetting Variables")
+        clf = None
+        weights = None
+        flag = False
+        previous_data = []
+        diff_data = []
+        threshold = 0.1
+        input_size = 0
+        mlalgoHasRun = False
     return 'Do Nothing', 10
 
 def reset():

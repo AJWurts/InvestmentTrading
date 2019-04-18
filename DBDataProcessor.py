@@ -4,6 +4,7 @@ from machinelearning.fracdiff import fracDiff
 from machinelearning.triplebars import applyTripleBarrierLabeling
 import numpy as np
 import pandas as pd
+from random import randint
 import matplotlib.pyplot as plt
 import sys
 
@@ -133,13 +134,15 @@ def calcHyperParams(data, percentile=75, numDays=2, func=lambda x: x['Volume'] *
 
 def createTestData(data, filename, length=45):
     # Creates test data set and saves it under filename_test.csv
-    test = data.iloc[-length:]
+    rand_pos = randint(0, data.shape[0] - length)
+
+    test = data.iloc[rand_pos:rand_pos + length]
     lastSlash = filename.rfind('/')
     period = filename.rfind('.')
 
     test.to_csv('./data/' + filename[lastSlash + 1: period] + '_test.csv')
-
-    return data.iloc[:-length]
+    training = data.drop(test.index, axis=0)
+    return training
 
 def processor(filename):
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
@@ -147,13 +150,13 @@ def processor(filename):
     dateparse3 = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     print("Loading CSV")
     data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dateparse3)
-    vol_price, thresh = calcHyperParams(data, numDays=1, percentile=80)
+    vol_price, thresh = calcHyperParams(data, numDays=2, percentile=75)
     print("THRESHOLD: ", thresh)
    
     data = createTestData(data, filename, length=80)
    
     print("Creating Bars")
-    bars, raw_bars = customBars(data, vol_price, lambda x: x['Volume'] * x['Close'], returnBars=True)  
+    bars, raw_bars = customBars(data, vol_price, lambda x: x['Volume'] * x['Close'], returnBars=True, offsetAfterFailure=80)  
     data = data.set_index('Date')
     # dollar bars 1e11 for days
     # dollar bar for minutes = 3.6e7
@@ -176,7 +179,7 @@ def processor(filename):
     print("Bins")
     bins = getBins(out, data['Close'])
 
-    bins = bins[bins.bin != 0]
+    # bins = bins[bins.bin != 0]
 
     print("Add Start Time")
     tMinusl = addStartTime(bins, data['Close'], numDays=10)

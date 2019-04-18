@@ -65,14 +65,19 @@ def Heikin_Ashi(bars, returnBars=False):
     return df.set_index('Date')
 
 
-def customBars(data, threshold, func, returnBars=False):
+def customBars(data, threshold, func, returnBars=False, offsetAfterFailure=0):
     dict_data = data.to_dict('records')
     bars = []
     raw_bars = []
     total = 0
     temp_bar = Bar()
+    offset = 0
     for i, d in tqdm(enumerate(dict_data), total=len(dict_data)):
-        temp_bar.addTick(data.Date[i], d)
+        try:
+            temp_bar.addTick(data.loc[i + offset, "Date"], d)
+        except:
+            offset = offsetAfterFailure
+            continue
         total += func(d)
         if total > threshold:
             temp_bar.updateLastTick(threshold)
