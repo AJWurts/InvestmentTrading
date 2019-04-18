@@ -88,7 +88,7 @@ def mlalgo(p, cash, stockOwned, ticker, last=False):
         print("New Classifier Opened")
         weights = getWeights(0.75, threshold=0.01)
         with open("./thresholds/" + ticker + "thresh.txt", 'r') as threshFile:
-            threshold = 0.01#float(threshFile.read()) / 2
+            threshold = 0.015#float(threshFile.read()) / 2
         with open('./mlsize/' + ticker + 'mlsize.txt', 'r') as mlsizefile:
             input_size = int(mlsizefile.read())
         clf = load('./machinelearning/saved_classifiers/randomforest_' + ticker + '.joblib')
@@ -119,7 +119,7 @@ def mlalgo(p, cash, stockOwned, ticker, last=False):
         result = clf.predict([diff_data[-input_size:]])[0]
         print(result)
         if result == 1 and cash > p:
-            return 'buy', 1000
+            return 'buy', 100000
         # else:
         #     return 'sell', 500
         flag = False

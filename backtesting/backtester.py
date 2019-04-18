@@ -42,11 +42,11 @@ class Trades:
 
         return x, y
 
-    def getTradeX(self, t_type='buy'):
+    def getTradeX(self, t_type='buy', offset=0):
         x = []
         for t in self.tradeLog:
             if t.type == t_type:
-                x.append(t.time)
+                x.append(t.time + offset) 
 
         return x
 
@@ -117,7 +117,7 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
     return cash, value_history, trades, historical_positions
 
 
-def start_backtest(tickers, time='medium', algo=mlalgo):
+def start_backtest(tickers, time='normal2', algo=mlalgo):
     # data = pd.read_csv('../data/forex_all.csv')
     data_set = [pd.read_csv('./data/' + ticker + '_test.csv')
                 for ticker in tickers]
@@ -126,8 +126,11 @@ def start_backtest(tickers, time='medium', algo=mlalgo):
         "long": {"tsl": 0.95, "pt": 1.2, "exp": None, "freq": 5},
         "medium": {"tsl": 0.97, "pt": 1.05, "exp": 8, "freq": 2},
         "short": {"tsl": 0.97, "pt": 1.03, "exp": 3, "freq": 1},
-        "normal": {"tsl": 0.97, "pt": 1.03, "exp": 5, "freq": 1}
+        "normal": {"tsl": 0.9, "pt": 1.2, "exp": None, "freq": 1},
+        "normal2": {"tsl": 0.95, "pt": 1.05, "exp": None, "freq": 1}
+
     }
+
 
     config = configs[time]
     # names = ["Crossing MA", "Buy and Hold", "Machine Learning"]
@@ -139,7 +142,8 @@ def start_backtest(tickers, time='medium', algo=mlalgo):
     else:
         _, axs = plt.subplots(len(tickers), 1, sharex=True)
     for i, data in enumerate(data_set):
-
+        with open('./mlsize/' + tickers[i] + 'mlsize.txt', 'r') as mlsizefile:
+            start_val = int(mlsizefile.read())
         # Run Backtester
         result, history, trades, positions = backTester(
             algo, data['Close'].values, config=config, ticker=tickers[i])
@@ -153,19 +157,19 @@ def start_backtest(tickers, time='medium', algo=mlalgo):
 
         # Set the title of the graph subsection
         axs[i].set_title(tickers[i] + ' return: ' + roi +
-                         ' trades: ' + str(len(trades)) + " Max Value: " + str(min(history)))
+                         ' trades: ' + str(len(trades)) + " Min Value: " + str(min(history)))
 
         # Plot the algorithms asset history
-        axs[i].plot([i for i in range(len(history))],
-                    history,  color='blue', linewidth=2)
+        axs[i].plot([i  for i in range(len(history[start_val:]))],
+                    history[start_val:],  color='blue', linewidth=2)
         
-        axs[i].plot([i for i in range(len(history))], data['Close'].values * (STARTING_MONEY / data['Close'].values[0]), color='orange', linewidth=2)
+        axs[i].plot([i  for i in range(len(history[start_val:]))], data['Close'].values[start_val:] * (STARTING_MONEY / data['Close'].values[start_val]), color='orange', linewidth=2)
         # Plot the Sell Trades in red
-        axs[i].scatter(trades.getTradeX('sell'), [history[t.time]
+        axs[i].scatter(trades.getTradeX('sell', offset=-start_val), [history[t.time]
                                                   for t in trades.tradeLog if t.type == 'sell'], color='red', alpha=0.5)
 
         # Plot the Buy Trades in green
-        axs[i].scatter(trades.getTradeX('buy'), [history[t.time]
+        axs[i].scatter(trades.getTradeX('buy', offset=-start_val), [history[t.time]
                        for t in trades.tradeLog if t.type == 'buy'], color='green', alpha=0.5)
         reset()
         # Print the results to terminal
