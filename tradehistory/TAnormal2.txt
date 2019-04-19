@@ -1,8 +1,8 @@
-[Return: 2845.5, Pct return: 0.113821138211382, Length: 8
-, Return: -1546.4000000000015, Pct return: -0.0555555555555556, Length: 1
-, Return: -987.75, Pct return: -0.03759398496240601, Length: 9
-, Return: 1929.5, Pct return: 0.07633587786259542, Length: 6
-, Return: 1576.7999999999956, Pct return: 0.05797101449275354, Length: 3
-, Return: -1534.0, Pct return: -0.05333333333333338, Length: 7
-, Return: -1432.7999999999956, Pct return: -0.052631578947368356, Length: 4
+[Return: -1254.890000000003, Pct return: -0.050204918032786906, Length: 5
+, Return: -1676.3499999999985, Pct return: -0.07065217391304333, Length: 2
+, Return: -1185.079999999998, Pct return: -0.053749999999999964, Length: 2
+, Return: 1163.560000000005, Pct return: 0.05580029368575636, Length: 1
+, Return: 2101.760000000002, Pct return: 0.09552238805970144, Length: 5
+, Return: 1756.1900000000023, Pct return: 0.07287933094384723, Length: 5
+, Return: -306.67999999999665, Pct return: -0.011866235167205981, Length: 1
 ]

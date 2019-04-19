@@ -117,7 +117,7 @@ def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": N
     return cash, value_history, trades, historical_positions
 
 
-def start_backtest(tickers, time='normal2', algo=mlalgo):
+def start_backtest(tickers, time='normal', algo=mlalgo):
     # data = pd.read_csv('../data/forex_all.csv')
     data_set = [pd.read_csv('./data/' + ticker + '_test.csv')
                 for ticker in tickers]
