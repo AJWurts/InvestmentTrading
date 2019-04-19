@@ -1,14 +1,21 @@
 
-from DBDataProcessor import processor
-from machinelearning.randomforest import forestgenerator
-from backtesting.backtester import start_backtest
 import sys
+from os import path
+# sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+import os
+ticker = sys.argv[1]
 
-print('Processing csv file')
-bins = processor("./data/AAPL_mongo.csv")
 
-clf = forestgenerator(bins)
+ticker_string = ""
+for ticker in sys.argv[1:]:
+    ticker_string += ticker + " "
+    os.system('python3 DBDataProcessor.py ' + ticker)
+    os.system('python3 machinelearning/randomforest.py ' + ticker)
 
-if len(sys.argv) > 1:
-  start_backtest()
+
+os.system('python3 backtesting/backtester.py ' + ticker_string)
+
+
+
+
 

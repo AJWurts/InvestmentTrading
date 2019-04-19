@@ -47,18 +47,3 @@ for i, p in enumerate(predictions):
 
 print(data)
 
-
-# print(unique[1])
-# for i, p in enumerate(predictions[:10]):
-#   print("Class: ", p)
-#   plt.subplot(10,1,i+1)
-#   plt.plot(grad[i])
-#   plt.title(p)
-
-# plt.show()
-
-# countAbove = len(abovePoint1[abovePoint1.ret > 0])
-# belowCount = len(abovePoint1[abovePoint1.ret < 0])
-# print("Above Count: ", countAbove)
-# print('below count: ', belowCount)
-# plt.show()

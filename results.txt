@@ -29,3 +29,11 @@ Volatility
 
 Produce outline of IQP
 Start writing
+
+
+Working backtest shown
+
+
+
+Show consistency
+certain parameters

@@ -1,0 +1,6 @@
+[Return: 1687.8313289999933, Pct return: 0.06751733479624306, Length: 3
+, Return: -816.4811340000015, Pct return: -0.030612287414965984, Length: 2
+, Return: -1237.5, Pct return: -0.04789272030651341, Length: 1
+, Return: -931.0499999999993, Pct return: -0.03784693019343995, Length: 1
+, Return: -1121.7199999999975, Pct return: -0.04742436631234669, Length: 1
+]

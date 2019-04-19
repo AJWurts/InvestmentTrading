@@ -30,27 +30,4 @@ def cumsum(data, p, returnI=False):
 
 
 
-# def fractionalDifferentiation(raw, t, d):
-
-#     summation = 0
-#     # raw = [t, ..., t-max]
-#     raw = raw[t:]
-
-#     for k in range(len(raw)):
-#         product = -raw[k]
-#         for i in range(len(data) - 1)):
-#             product *= ((d - i) / (k - i))
-
-#         summation += product  
-
-#     return summmation      
-
-
-
-
-
-# if __name__ == "__main__":
-#     data = pd.read_csv("SPY.csv")
-
-#     print(cumsum(data['Close'], 0.01))
 

@@ -4,36 +4,9 @@ from machinelearning.fracdiff import fracDiff
 from machinelearning.triplebars import applyTripleBarrierLabeling
 import numpy as np
 import pandas as pd
+from random import randint
 import matplotlib.pyplot as plt
-
-# # Code straight from the book
-# def applyTripleBarrierLabeling(close, events, ptSl):
-#     """
-#     Labels every point up, down or neutral
-#     close: list of close prices
-#     events: 
-#         [t1: timestamp of vertical barrier ]
-#     """
-#     events_ = events
-#     out = events_[['t1']].copy(deep=True)
-#     if ptSl[0] > 0:
-#         pt = ptSl[0] * events_['trgt']
-#     else:
-#         pt = pd.Series(index=events.index)
-    
-#     if ptSl[1] > 0:
-#             sl = -ptSl[1] * events_['trgt']
-#     else:
-#         sl = pd.Series(index=events.index)
-
-#     for loc, t1 in tqdm(events_['t1'].fillna(close.index[-1]).iteritems(), total=len(events_)):
-#         df0 = close[loc:t1] # Path Prices
-#         df0 = (df0 / close[loc] - 1) * events_.at[loc, 'side'] # path prices
-#         out.loc[loc, 'sl'] = df0[df0 < sl[loc]].index.min() # Earlist stop loss
-#         out.loc[loc, 'pt'] = df0[df0 > pt[loc]].index.min() # Earlist profit taking
-
-#     return out
-
+import sys
 
 def getDailyVol(close,span0=50):
     # daily vol reindexed to close
@@ -113,10 +86,10 @@ def createTrainingData(bins, data, length=120, fd=False):
     # print(close)
     # Bins
     if fd:
-        diff = fracDiff(data)
+        diff = fracDiff(data, d=0.75)
         data = diff[['Close', 'High', 'Open', 'Low']]
     else:
-        data = data[['Close', 'High', 'Open', 'Low']]
+        data = data['Close']#data[['Close', 'High', 'Open', 'Low']]
     start = data['Close'].index.searchsorted(bins['start'].values)
     finish = data['Close'].index.searchsorted(bins.index)
     arrays = []
@@ -133,34 +106,66 @@ def createTrainingData(bins, data, length=120, fd=False):
 
 
     training_arrays = pd.Series(arrays, index=bins.index)
+    training_arrays = training_arrays[training_arrays.map(len) > 8]
     initret = pd.Series(initRet, index=bins.index)
     bins['data'] = training_arrays
     bins['initret'] = initret
     # bins = bins[mask]
     return bins
 
+def calcHyperParams(data, percentile=75, numDays=2, func=lambda x: x['Volume'] * x['Close']):
+    """
+    Calculates threshold for when cumulative summation activates and calculates the number required so that the bar creator roughly creates bars equal to 2 days each.
+    percentile: the percentile to select for the threshold
+    numDays: the approximate number of days to include in each bar based on the average of the volume * close
+    func: Should be the same function used in the custumBars method
+    """
+    # Goal: Calculate 75% percentile of daily price movemet assuming its normal
+    diff = (data['High'] - data['Low'])
+    thresh = np.percentile(diff, percentile)
 
+    # Calculate vol*price for data so that the bars last around 2 days.
+    vol_price_data = func(data)
+    vol_price_avg = np.mean(vol_price_data) * numDays
+
+
+    return vol_price_avg, thresh / 10
     
+
+def createTestData(data, filename, length=45):
+    # Creates test data set and saves it under filename_test.csv
+    rand_pos = randint(0, data.shape[0] - length)
+
+    test = data.iloc[rand_pos:rand_pos + length]
+    lastSlash = filename.rfind('/')
+    period = filename.rfind('.')
+
+    test.to_csv('./data/' + filename[lastSlash + 1: period] + '_test.csv')
+    training = data.drop(test.index, axis=0)
+    return training
+
 def processor(filename):
     dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
     dparse2 = lambda x: pd.datetime.strptime(x, '%m/%d/%Y')
+    dateparse3 = lambda x: pd.datetime.strptime(x, '%Y-%m-%d')
     print("Loading CSV")
-    data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dparse2)
-    
+    data = pd.read_csv(filename, parse_dates=['Date'],  date_parser=dateparse3)
+    vol_price, thresh = calcHyperParams(data, numDays=2, percentile=75)
+    print("THRESHOLD: ", thresh)
+   
+    data = createTestData(data, filename, length=80)
    
     print("Creating Bars")
-    bars, raw_bars = customBars(data, 1e11, lambda x: x['Volume'] * x['Close'], returnBars=True)  
+    bars, raw_bars = customBars(data, vol_price, lambda x: x['Volume'] * x['Close'], returnBars=True, offsetAfterFailure=80)  
     data = data.set_index('Date')
     # dollar bars 1e11 for days
     # dollar bar for minutes = 3.6e7
 
     print("Heikin Ashi Bars")
     bars = Heikin_Ashi(raw_bars)
-    
-    
 
     print("Cumulative Summation Event Selector")
-    events = cumsum(bars, 0.01967)
+    events = cumsum(bars, thresh)
 
     print("Vertical Bars")
     t1 = addVerticalBarrier(events, data['Close'], numDays=3)
@@ -168,13 +173,13 @@ def processor(filename):
     side_ = pd.Series(1.,index=t1.index)
     events = pd.concat({'t1':t1,'trgt':trgt,'side':side_}, axis=1)
     
-    out = applyTripleBarrierLabeling(data['Close'], events, [1,1])
-    print("Bins after triple barrier: ", out)
+    out = applyTripleBarrierLabeling(data['Close'], events, [3,3])
+    # print("Bins after triple barrier: ", out)
     out = out.sort_index()
     print("Bins")
     bins = getBins(out, data['Close'])
 
-    bins = bins[bins.bin != 0]
+    # bins = bins[bins.bin != 0]
 
     print("Add Start Time")
     tMinusl = addStartTime(bins, data['Close'], numDays=10)
@@ -185,13 +190,21 @@ def processor(filename):
     bins = createTrainingData(bins, data, length=8, fd=True)    
     
     print("Saving")
-    bins.to_csv('./data/spy_training_0001.csv')
+    lastSlash = filename.rfind('/')
+    period = filename.rfind('.')
+    bins.to_csv('./data/training_' + filename[lastSlash + 1: period] + '.csv')
 
-    return bins
+    return bins, thresh
 
 if __name__ == "__main__":
-    processor("./data/SPY_93.csv")
+    # altProcess('./data/UNH.csv')
+    if len(sys.argv) > 1:
+        bins, thresh = processor('./data/' + sys.argv[1] + '.csv')
+    else:
+        bins, thresh = processor("./data/UNH.csv")
 
+    with open("./thresholds/" + sys.argv[1] + "thresh.txt", 'w') as output:
+        output.write(str(thresh))
 
 
 
