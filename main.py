@@ -4,6 +4,7 @@ from os import path
 # sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 import os
 ticker = sys.argv[1]
+## Run me followed by stock tickers of Yahoo data you have downloaded and placed in the data folder
 
 
 ticker_string = ""

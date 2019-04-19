@@ -128,9 +128,7 @@ def start_backtest(tickers, time='normal', algo=mlalgo):
         "short": {"tsl": 0.97, "pt": 1.03, "exp": 3, "freq": 1},
         "normal": {"tsl": 0.9, "pt": 1.2, "exp": None, "freq": 1},
         "normal2": {"tsl": 0.95, "pt": 1.05, "exp": None, "freq": 1}
-
     }
-
 
     config = configs[time]
     # names = ["Crossing MA", "Buy and Hold", "Machine Learning"]
