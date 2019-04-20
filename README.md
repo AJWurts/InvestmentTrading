@@ -1,4 +1,4 @@
-# Investmenet Trading
+# Investment Trading
 ## Written by Alexander Wurts for a Worcester Polytechnic Institute (WPI) Interative Qualifying Project (IQP)
 
 Utilizes a Bagging Classifier that uses Random Forest to trade stocks autonomously.
