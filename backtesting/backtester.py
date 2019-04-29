@@ -6,10 +6,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from algorithms.Algorithms import wurtsAlgorithm, alwaysBuy, randomBuySell, keepAt50k, mlalgo, reset
-from algorithms.Nicholas_Algorithms import n_algorithm1, n_algorithm2, n_algorithm3
 from machinelearning.fracdiff import fracDiff, getWeights
 from tqdm import tqdm
-from trade import Position
+from trade import Position, Trade, Trades
 
 
 
@@ -17,52 +16,6 @@ STARTING_MONEY = 25000  # $100,000
 COMMISSION = 5  # $5 commission
 
 
-class Trade:
-    def __init__(self, time, qtn, t_type):
-        self.time = time
-        self.qtn = qtn
-        self.type = t_type
-
-
-class Trades:
-    def __init__(self):
-        self.numberOfTrades = 0
-        self.tradeLog = []
-
-    def addTrade(self, trade):
-        self.numberOfTrades += 1
-        self.tradeLog.append(trade)
-
-    def getTradeList(self):
-        x = []
-        y = []
-        for t in self.tradeLog:
-            x.append(t.time)
-            y.append(t.qtn)
-
-        return x, y
-
-    def getTradeX(self, t_type='buy', offset=0):
-        x = []
-        for t in self.tradeLog:
-            if t.type == t_type:
-                x.append(t.time + offset) 
-
-        return x
-
-    def getTradeY(self, t_type='buy'):
-        y = []
-        for t in self.tradeLog:
-            if t.type == t_type:
-                y.append(t.qtn)
-
-        return y
-
-    def __len__(self):
-        return len(self.tradeLog)
-
-    def __str__(self):
-        return str(self.tradeLog)
 
 
 def backTester(algorithm, close_prices, config={"tsl": 0.95, "pt": 1.1, "exp": None, 'freq': 1}, ticker='UNH'):

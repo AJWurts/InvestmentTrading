@@ -10,3 +10,4 @@ Utilizes a Bagging Classifier that uses Random Forest to trade stocks autonomous
 3. Install Numpy, Pandas, Python 3.0+, Matplotlib, Scikitlearn
 4. Type python3 main.py [stock ticker here]
   * Example: python3 main.py AMD
+  * Example 2: python3 main.py AMD AAPL CZR DE
