@@ -1,13 +1,4 @@
-.vscode/settings.json
-forex_data/*
-forex_data.zip
-.vscode*
-__pycache__/*
-data/forex_data.csv
-backtesting/forex2015to2018_data.csv
-data/forex2015to2018_data.csv
-machinelearning/saved_classifiers/*
-data/*
-*.joblib
 *.pyc
-machinelearning/__pycache__/fracdiff.cpython-36.pyc
+*.csv
+*.txt
+*.joblib
